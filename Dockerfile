@@ -16,7 +16,7 @@ RUN apt-get update -y && apt-get install -y \
         python-gd python-mecab python-lzma
 
 # Set up the base board
-RUN git clone https://github.com/wikireader/wikireader.git
+RUN git clone https://github.com/stephen-mw/wikireader.git
 
 WORKDIR wikireader
 

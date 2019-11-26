@@ -1,3 +1,5 @@
+# This will probably work on other distros, but some of the package names have
+# changed.
 FROM ubuntu:precise
 
 ADD apt.sources.list /etc/apt/sources.list
@@ -19,10 +21,8 @@ RUN git clone https://github.com/stephen-mw/wikireader.git
 
 WORKDIR wikireader
 
-RUN make clean && make requirements
-
 # There will be a binutils failure here
-RUN make || true
+RUN make clean && make requirements && make || true
 RUN cp SavedCaches/config.cache-binutils-12.10 host-tools/binutils-2.10.1/build/config.cache
 
 # There will be a gcc error here
@@ -31,5 +31,3 @@ RUN cp SavedCaches/config.cache-gcc-12.10 host-tools/gcc-3.3.2/build/config.cach
 
 # Should be good to go
 RUN make
-
-RUN echo "New app created: wiki/wiki.app"

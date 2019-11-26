@@ -32,7 +32,7 @@
 
 extern int search_interrupted;
 #define FND_BUF_COUNT 1024
-#define MAX_FND_FILES 16
+#define MAX_FND_FILES 20
 
 // FND_BUF_BLOCK_SIZE needs to be larger than NUMBER_OF_FIRST_PAGE_RESULTS * sizeof(TITLE_SEARCH)
 #define FND_BUF_BLOCK_SIZE 4096

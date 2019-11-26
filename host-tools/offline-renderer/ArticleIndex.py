@@ -534,7 +534,7 @@ pragma journal_mode = memory;
         if type(title) == str:
             title = unicode(title, 'utf-8')
         if title in self.articles:
-            logging.warning("title %s already exists in indix. skippig...", title)
+            PrintLog.message(u'ERROR: Duplicate Title: {0:s}. Skipping...'.format(title))
             return
         self.articles[title] = data
 

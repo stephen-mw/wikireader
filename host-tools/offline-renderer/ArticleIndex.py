@@ -9,6 +9,7 @@
 from __future__ import with_statement
 import os
 import sys
+import logging
 import struct
 from LittleParser import LittleParser
 import urllib
@@ -39,8 +40,6 @@ class CycleError(Exception):
 
 verbose = False
 enable_templates = True     # $$$ When this is false, templates are included as articles :/
-error_flag = False          # indicates error in indexing, but processing will still continue
-                            # to find more errors
 
 bigram = {}
 
@@ -65,7 +64,6 @@ def usage(message):
 
 def main():
     global verbose
-    global error_flag
 
 
     try:
@@ -199,15 +197,6 @@ def main():
     output_fnd(fnd_name, processor, language_convert, truncate_title)
     output_pfx(pfx_name)
     del processor
-
-    # return non-zero status if there have been any errors
-    if error_flag:
-        PrintLog.message('*** ERROR in Index build')
-        PrintLog.message('***   Currently "Duplicate Title" is the only condition that causes this error')
-        PrintLog.message('***   Likely "license.xml" or "terms.xml" file duplicates a title in main wiki file')
-        PrintLog.message('***   Manually edit "license.xml" or "terms.xml" file to change the title')
-        sys.exit(1)
-
 
 def upper_case_first_char(text):
     """upper case the first character of a siring and leave the rest unchanged
@@ -467,7 +456,6 @@ pragma journal_mode = memory;
 
     def body(self, category, key, title, text, seek):
         global verbose
-        global error_flag
 
         title = self.convert(title).strip(u'\u200e\u200f')
 
@@ -511,9 +499,7 @@ pragma journal_mode = memory;
         self.total_character_count += character_count
         self.offsets[self.article_count] = (self.file_id(), title, seek, character_count, self.total_character_count)
 
-        if self.set_index(title, (self.article_count, -1, restricted, False)): # -1 == place holder
-            PrintLog.message(u'ERROR: Duplicate Title: {0:s}'.format(title))
-            error_flag = True
+        self.set_index(title, (self.article_count, -1, restricted, False)) # -1 == place holder
 
 
     def resolve_redirects(self):
@@ -547,9 +533,10 @@ pragma journal_mode = memory;
         """returns false if the key did not already exist"""
         if type(title) == str:
             title = unicode(title, 'utf-8')
-        result = title in self.articles
+        if title in self.articles:
+            logging.warning("title %s already exists in indix. skippig...", title)
+            return
         self.articles[title] = data
-        return result
 
 
     def get_index(self, title):

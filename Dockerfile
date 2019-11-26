@@ -1,7 +1,6 @@
 FROM ubuntu:precise
 
 ADD apt.sources.list /etc/apt/sources.list
-RUN echo 'Acquire::http::Proxy "http://10.10.10.10:3142";' > /etc/apt/apt.conf.d/02proxy
 RUN apt-get update -y && apt-get install -y \
         openssh-server mg lynx bash-completion \
         git build-essential flex bison \

@@ -14,12 +14,13 @@ RUN apt-get update -y && apt-get install -y \
         mecab-ipadic-utf8 \
         php5-sqlite php5-tidy \
         gawk \
-        python-gd python-mecab python-lzma
-
-# Set up the base board
-RUN git clone https://github.com/stephen-mw/wikireader.git
+        vim \
+        python-gd \
+        python-mecab \
+        python-lzma
 
 WORKDIR wikireader
+ADD . /wikireader
 
 # There will be a binutils failure here
 RUN make clean && make requirements && make || true

@@ -7,6 +7,8 @@
  * File for Parser and related classes
  */
 
+// Remove default PHP memory limits
+ini_set("memory_limit",-1);
 
 /**
  * PHP Parser - Processes wiki markup (which uses a more user-friendly

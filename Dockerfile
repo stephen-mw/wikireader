@@ -14,10 +14,10 @@ RUN apt-get update -y && apt-get install -y \
         mecab-ipadic-utf8 \
         php5-sqlite php5-tidy \
         gawk \
-        vim \
         python-gd \
         python-mecab \
-        python-lzma
+        python-lzma \
+        vim strace # for debugging
 
 WORKDIR wikireader
 ADD . /wikireader

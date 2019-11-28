@@ -28,7 +28,7 @@
  * http://www.gnu.org/copyleft/gpl.html
 **/
 
-ini_set( 'memory_limit', '1G' );
+ini_set( 'memory_limit', '5G' );
 ini_set( 'xdebug.max_nesting_level', 250 );
 
 $wgTemplatePrefix = 'Template:';

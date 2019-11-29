@@ -34,6 +34,9 @@ def usage(message):
 
 
 def main():
+    # This feature is disabled
+    return
+
     global verbose, show_restricted
 
     try:

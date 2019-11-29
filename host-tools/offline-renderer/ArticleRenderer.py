@@ -342,7 +342,7 @@ def main():
         global g_starty
         g_starty += inc
 
-    output = EscapeBuffer.EscapeBuffer(callback=y_adjust, max_length=max_article_length)
+    output = EscapeBuffer.EscapeBuffer(callback=y_adjust, max_length=295733)
 
     if test_file == '':
         compress = True

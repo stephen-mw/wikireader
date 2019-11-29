@@ -40,9 +40,9 @@ foreach ($list as $file) {
                 foreach ($m as $value) {
                     if ("0" !== $value && 0 !== $value) {
                         $redirects[$value] = $value;
-                        $value = mb_strtolower($value, 'UTF-8');
+                        $value = strtolower($value);
                         $redirects[$value] = $value;
-                        $value = mb_strtoupper($value, 'UTF-8');
+                        $value = strtoupper($value);
                         $redirects[$value] = $value;
                     }
                 }

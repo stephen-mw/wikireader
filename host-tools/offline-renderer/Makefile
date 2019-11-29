@@ -87,14 +87,14 @@ MEDIAWIKI_MESSAGES_DIR := mediawiki-offline/languages/messages
 $(call REQUIRED_BINARY, sqlite3, sqlite3)
 $(call REQUIRED_BINARY, ocamlopt, ocaml)
 $(call REQUIRED_BINARY, tex, cjk-latex)
-$(call REQUIRED_BINARY, php, php5-cli)
+$(call REQUIRED_BINARY, php, php-cli)
 $(call REQUIRED_BINARY, dvipng, dvipng)
 $(call REQUIRED_BINARY, ${MECAB_INDEX}, mecab-ipadic-utf8)
 
-$(call REQUIRED_PHP, pdo_sqlite, php5-sqlite)
-$(call REQUIRED_PHP, session, php5-session)
-$(call REQUIRED_PHP, ctype, php5-ctype)
-$(call REQUIRED_PHP, tidy, php5-tidy)
+$(call REQUIRED_PHP, pdo_sqlite, php-sqlite)
+$(call REQUIRED_PHP, session, php-session)
+$(call REQUIRED_PHP, ctype, php-ctype)
+$(call REQUIRED_PHP, tidy, php-tidy)
 
 
 ifeq (yes,$(strip ${VERBOSE}))
@@ -197,7 +197,7 @@ user.dic: japanese_dictionary.csv ${MECAB_INDEX}
 # create the #redirect regular expression
 CLEAN_TARGETS += RedirectedTo.py
 RedirectedTo.py: FindAllRedirects.php ${MEDIAWIKI_MESSAGES_DIR}/*.php
-	php5 FindAllRedirects.php ${MEDIAWIKI_MESSAGES_DIR}/*.php > "$@"
+	php FindAllRedirects.php ${MEDIAWIKI_MESSAGES_DIR}/*.php > "$@"
 
 # create Pinyin table for index program
 PINYIN_TABLE = pinyin-data/pinyin_table.txt

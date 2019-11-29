@@ -68,7 +68,7 @@ while (!feof($fp)) {
     $line = fgets($fp, 8192);
 	if ($line == "***EOF***\n") {
 		echo wfParseTextAndWrapWOC($body);
-		if ($i++ % 3000 == 0 ) {	# flush every 3000 articles
+		if ($i++ % 500 == 0 ) {	# flush every 500 articles
 			ob_flush();		# otherwise PHP runs out of
 			flush();		# memory
 		}

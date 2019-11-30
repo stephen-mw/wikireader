@@ -249,7 +249,7 @@ class DatabaseNo extends Database
 	}
 */
 
-	function selectRow( $table, $vars, $conds, $fname = 'Database::selectRow', $options = array() ) {
+	function selectRow( $table, $vars, $conds, $fname = 'Database::selectRow', $options = array(), $join_conds = array() ) {
 		return null;
 	}
 

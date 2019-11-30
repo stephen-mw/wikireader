@@ -24,6 +24,10 @@
  * @ingroup Parser
  */
 
+
+// Suppress the php5 regex warnings
+error_reporting(E_ERROR | E_PARSE);
+
 /**
  * Regular expression to match various types of character references in
  * Sanitizer::normalizeCharReferences and Sanitizer::decodeCharReferences

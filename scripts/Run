@@ -335,9 +335,6 @@ do
   RUN -n rm -f "${LogFile}"
   RUN -n touch "${LogFile}"
 
-  # update
-  RUN git pull
-
   # set up the make options
   common_opts="DESTDIR='${dest}' WORKDIR='${work}' TEMPDIR='${temp}'"
   common_opts="${common_opts} WIKI_FILE_PREFIX='${FilePrefix}'"

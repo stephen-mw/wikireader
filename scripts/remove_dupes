@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+
+import argparse
+from re import compile
+
+REGEX = compile("\s+<title>(.*)<\/title>$")
+TITLES = set()
+
+
+def main():
+    """Run the main program"""
+
+    desc = """\
+Remove duplicate titles from a wikimedia dump.
+
+This script will scan through a wikimeda dump. If a duplicate title is found,
+then it will be renamed with an appended "(dupe)" string added to the end.
+
+Beware that it creates a new file the same size as the original. Make sure you
+have enough space on your system for it."""
+
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument(
+        "input", metavar="<intput file>", help="the input file to parse"
+    )
+    parser.add_argument(
+        "output", metavar="<input file>", help="the deduplicated output file to create"
+    )
+
+    args = parser.parse_args()
+    output = open(args.output, "w")
+    with open(args.input) as _file:
+        for line in _file:
+            match = REGEX.match(line)
+            if match:
+                title = match.group(1)
+                if title in TITLES:
+                    print("Duplicate title: " + title)
+                    new = title + " (dupe)"
+                    line = line.replace(title, new)
+                TITLES.add(title)
+            output.write(line)
+
+
+main()

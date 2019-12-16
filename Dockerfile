@@ -20,7 +20,7 @@ RUN apt-get update -y && apt-get install -y \
         vim strace # for debugging
 
 WORKDIR wikireader
-ADD . /wikireader
+RUN git clone https://github.com/stephen-mw/wikireader.git
 
 # There will be a binutils failure here
 RUN make clean && make requirements && make || true

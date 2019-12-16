@@ -20,15 +20,15 @@ RUN apt-get update -y && apt-get install -y \
         vim strace # for debugging
 
 WORKDIR wikireader
-RUN git clone https://github.com/stephen-mw/wikireader.git
+RUN git clone https://github.com/stephen-mw/wikireader.git /wikireader
 
 # There will be a binutils failure here
 RUN make clean && make requirements && make || true
-RUN cp SavedCaches/config.cache-binutils-12.10 host-tools/binutils-2.10.1/build/config.cache
+RUN cp /wikireader/SavedCaches/config.cache-binutils-12.10 /wikireader/host-tools/binutils-2.10.1/build/config.cache
 
 # There will be a gcc error here
 RUN make || true
-RUN cp SavedCaches/config.cache-gcc-12.10 host-tools/gcc-3.3.2/build/config.cache
+RUN cp /wikireader/SavedCaches/config.cache-gcc-12.10 /wikireader/host-tools/gcc-3.3.2/build/config.cache
 
 # Should be good to go
 RUN make

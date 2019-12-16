@@ -206,7 +206,7 @@ def main():
         PrintLog.message('***   Currently "Duplicate Title" is the only condition that causes this error')
         PrintLog.message('***   Likely "license.xml" or "terms.xml" file duplicates a title in main wiki file')
         PrintLog.message('***   Manually edit "license.xml" or "terms.xml" file to change the title')
-        # sys.exit(1)
+        sys.exit(1)
 
 
 def upper_case_first_char(text):

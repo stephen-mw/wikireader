@@ -38,8 +38,7 @@ RUN apt update && apt install -y \
     php5.6-xml
 RUN ln -s /usr/bin/php5.6 /usr/bin/php5
 
-WORKDIR /wikireader
-ADD . /wikireader   
+RUN git clone https://github.com/stephen-mw/wikireader.git /wikireader
 
 RUN tar xvf required_packages.tgz && cd packages && dpkg -i *
 RUN make clean

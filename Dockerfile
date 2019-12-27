@@ -2,6 +2,8 @@ FROM ubuntu:bionic
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+WORKDIR /wikireader
+
 RUN apt update -y
 RUN apt update && apt install -y \
     bison                        \
@@ -38,7 +40,8 @@ RUN apt update && apt install -y \
     php5.6-xml
 RUN ln -s /usr/bin/php5.6 /usr/bin/php5
 
-RUN git clone https://github.com/stephen-mw/wikireader.git /wikireader
+RUN git clone https://github.com/stephen-mw/wikireader.git /wikireader && \
+    tar xvf required_packages.tgz && \
+    cd packages && dpkg -i *
 
-RUN tar xvf required_packages.tgz && cd packages && dpkg -i *
 RUN make clean

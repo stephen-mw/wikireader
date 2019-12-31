@@ -1,74 +1,54 @@
-Contents of root directory
-==========================
+# Wikireader build utilies
+This repo (and docker container) contain the tools necessary to build an updated wikireader image.
 
-binutils*  [Created during build]
+# Building
+You must do a parallized build in order to create `dat` files that are small enough for the wikireader. Parallelism is controlled via parameters of the `Run` script.
 
-  Stamp files for make
+By default the `Run` file runs all parallelized processes at once. This can often be too much for your system to handle memory wise. To control the max number of concurrent parsers and renders running at once, you can set the environment variable `MAX_CONCURRENT`, which prevents new parsers or renders from running until they can get a semaphor lock.
 
-COPYING
+On my machine, which is an 4 core 8 thread i7 with 32 GB of ram, I find that running `MAX_CONCURRENT` at 8 with parallelism to 16 is good enough. That will use about 16 GB of ram.
 
-  GPLV3 License information this covers most of the code in the
-  wiki-app directory.  Other files/directories may have their own
-  license information.
+## Docker settings
+By default docker doesn't share a lot of resources. You'll want to max out the CPU and memory share to your container in your docker configuration.
 
-doc
+# Preparing a wikipedia dump file
+Wikipedia dump files can be downloaded directly from wikipedia. There's some preparation you'll need to do to the file before it will work. First, you'll need to dedupe the titles in the file. There's an included script you can run in order to dedupe the files.
 
-  Various documents including explanation of how to set up a chroot
-  for compiling the application
+After deduping, you'll either need to place or symlink the wikipedia file into the `wikireader` directory, since the `Run` script has rigid rules about the files. Since you probably don't want to upload the entire file to your docker context, this is best solved by sharing the `build` directory with your docker container and then symlinking into your wikireader directory (see the script parameters at the bottom to see how it's done).
 
-gcc*  [Created during build]
+# Commands for building
+The below commands assume you've downloaded a wikipedia dump to the `build` directory. I'm using the Dec 20 dump as an example.
+```
+# Dedupe the wikipedia file and create one with a generic name. Note, this creates a new large file. Make sure you have enough space.
+scripts/remove_dupes build/enwiki-20191201-pages-articles.xml build/enwiki-pages-articles.xml
 
-  Stamp files for make
+# Optionally delete the old, 70GB file
+rm build/enwiki-20191201-pages-articles.xml
 
-host-tools
+# Launch docker and share the build directory with `/build`. Make sure you run this from your `wikireader` directory.
+docker run --rm -v $(pwd)/build:/build -ti stephenmw/wikireader:latest bash
 
-  Programs that are used during building the software including cross
-  compiler, simulator and utilities to create the data files.
+# Symlink over the file
+ln -s /build/enwiki-pages-articles.xml enwiki-pages-articles.xml
 
-  See: host-tools/00ReadMe.text
+# Set the max concurrency and give this attempt a name. I use 8 for my system. Use whatever works for you.
+export MAX_CONCURRENCY=8 
+export RUNVER="test"
 
-Licenses
+# Start the processing and wait a really link time (4.5 days for me)
+time scripts/Run --parallel=16 --machines=1 --farm=1 --work=/build/${RUNVER}/work --dest=/build/${RUNVER}/image --temp=/dev/shm --clear ::::::: 2>&1 < /dev/null | tee /build/${RUNVER}.log
 
-  Some of the licenses used in various parts of the system, normally
-  the individual files/sub-directories will have their own
-  copyright/license information.
+# Combine the files and create the image
+make WORKDIR=/build/${RUNVER}/work DESTDIR=/build/${RUNVER}/image combine install
 
-Makefile
+# Remove / cleanup the work directory
+rm -rfv /build/${RUNVER}/wor
+```
 
-  The master make file that controls all stages of the building process.
+After this process, you can shutdown your container. The new image will be found under `build/${RUNVER}/image`. You can copy this entire directory over to your SD card.
 
-samo-lib
+# Preparing the SD card
+The SD card must be formatted as fat32.
 
-  Programs and libraries that run on the WikiReader Hardware
-
-  See: samo-lib/00ReadMe.text
-
-scripts
-
-  Some scripts to handle building on multiple machines and/ore multiple
-  cores.  The "Run" script is the actual build script and the "progress"
-  script is used to control and monitor the remote servers.
-
-testudo
-
-  Python programs and scripts for production testing
-
-TODO
-
-  Some notes about things to think about
-
-wiki-app
-
-  This is the main application code and is compiled both for inclusion
-  on the device and for the simulator.
-
-xml-file-samples
-
-  Some XML files for testing the offline rendering process
-
-XML-Licenses
-
-  Language specific source files. Includes wiki.nls source
-  and the XML sources for terms and license that are built
-  into the individual wiki data files.
-
+# Old doc
+The old readme can be found under doc/

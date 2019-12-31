@@ -1,0 +1,74 @@
+Contents of root directory
+==========================
+
+binutils*  [Created during build]
+
+  Stamp files for make
+
+COPYING
+
+  GPLV3 License information this covers most of the code in the
+  wiki-app directory.  Other files/directories may have their own
+  license information.
+
+doc
+
+  Various documents including explanation of how to set up a chroot
+  for compiling the application
+
+gcc*  [Created during build]
+
+  Stamp files for make
+
+host-tools
+
+  Programs that are used during building the software including cross
+  compiler, simulator and utilities to create the data files.
+
+  See: host-tools/00ReadMe.text
+
+Licenses
+
+  Some of the licenses used in various parts of the system, normally
+  the individual files/sub-directories will have their own
+  copyright/license information.
+
+Makefile
+
+  The master make file that controls all stages of the building process.
+
+samo-lib
+
+  Programs and libraries that run on the WikiReader Hardware
+
+  See: samo-lib/00ReadMe.text
+
+scripts
+
+  Some scripts to handle building on multiple machines and/ore multiple
+  cores.  The "Run" script is the actual build script and the "progress"
+  script is used to control and monitor the remote servers.
+
+testudo
+
+  Python programs and scripts for production testing
+
+TODO
+
+  Some notes about things to think about
+
+wiki-app
+
+  This is the main application code and is compiled both for inclusion
+  on the device and for the simulator.
+
+xml-file-samples
+
+  Some XML files for testing the offline rendering process
+
+XML-Licenses
+
+  Language specific source files. Includes wiki.nls source
+  and the XML sources for terms and license that are built
+  into the individual wiki data files.
+

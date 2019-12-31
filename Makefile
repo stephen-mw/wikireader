@@ -192,6 +192,9 @@ WIKI_FILE_PREFIX ?= wiki
 WIKI_DIR_SUFFIX ?= pedia
 WIKI_VERSION ?= $(shell date '+%Y%m%d')
 
+MACHINE_COUNT ?= 9
+PARALLEL_BUILD ?= 3
+MAX_CONCURRENCY ?= ${PARALLEL_BUILD}
 
 # Installation
 # ============
@@ -448,8 +451,6 @@ ENABLE_IMAGES ?= YES
 ARTICLES_PER_BLOCK ?= 1
 ARTICLE_BLOCK_SIZE ?= 262144
 MAX_ARTICLE_LENGTH ?= UNLIMITED
-MAX_CONCURRENCY ?= 36
-
 
 # erase the working directories for the current language
 .PHONY: cleandirs
@@ -550,9 +551,6 @@ RENDER_STAMP := ${WORKDIR_PATH}/${WIKI_LANGUAGE}${WIKI_DIR_SUFFIX}/stamp-render
 # ---------------------------------------------------------------------------------------
 # Get the number of articles from the indexer and compute how many articles per instance
 # ---------------------------------------------------------------------------------------
-
-MACHINE_COUNT ?= 9
-PARALLEL_BUILD ?= 3
 
 COUNTS_FILE = ${WORKDIR_PATH}/${WIKI_LANGUAGE}${WIKI_DIR_SUFFIX}/counts.text
 

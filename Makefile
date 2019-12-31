@@ -448,6 +448,7 @@ ENABLE_IMAGES ?= YES
 ARTICLES_PER_BLOCK ?= 1
 ARTICLE_BLOCK_SIZE ?= 262144
 MAX_ARTICLE_LENGTH ?= UNLIMITED
+MAX_CONCURRENCY ?= 36
 
 
 # erase the working directories for the current language
@@ -488,6 +489,7 @@ index: validate-destdir
 
 .PHONY: parse
 parse: validate-destdir
+	sem --jobs ${MAX_CONCURRENCY} --id WIKIREADER --fg -- exec \
 	${MAKE} -C "${HOST_TOOLS}/offline-renderer" parse \
 		WIKI_LANGUAGE="${WIKI_LANGUAGE}" \
 		WIKI_LANGUAGE_VARIANT="${WIKI_LANGUAGE_VARIANT}" \
@@ -500,6 +502,7 @@ parse: validate-destdir
 
 .PHONY: render
 render: fonts validate-destdir
+	sem --jobs ${MAX_CONCURRENCY} --id WIKIREADER --fg -- exec \
 	${MAKE} -C "${HOST_TOOLS}/offline-renderer" render \
 		WIKI_LANGUAGE="${WIKI_LANGUAGE}" \
 		WIKI_LANGUAGE_VARIANT="${WIKI_LANGUAGE_VARIANT}" \

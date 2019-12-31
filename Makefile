@@ -489,7 +489,7 @@ index: validate-destdir
 
 .PHONY: parse
 parse: validate-destdir
-	sem --jobs ${MAX_CONCURRENCY} --id WIKIREADER --fg -- exec \
+	sem --jobs ${MAX_CONCURRENCY} --id WIKIREADER --fg -- \
 	${MAKE} -C "${HOST_TOOLS}/offline-renderer" parse \
 		WIKI_LANGUAGE="${WIKI_LANGUAGE}" \
 		WIKI_LANGUAGE_VARIANT="${WIKI_LANGUAGE_VARIANT}" \
@@ -502,7 +502,7 @@ parse: validate-destdir
 
 .PHONY: render
 render: fonts validate-destdir
-	sem --jobs ${MAX_CONCURRENCY} --id WIKIREADER --fg -- exec \
+	sem --jobs ${MAX_CONCURRENCY} --id WIKIREADER --fg -u -- \
 	${MAKE} -C "${HOST_TOOLS}/offline-renderer" render \
 		WIKI_LANGUAGE="${WIKI_LANGUAGE}" \
 		WIKI_LANGUAGE_VARIANT="${WIKI_LANGUAGE_VARIANT}" \

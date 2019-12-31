@@ -9,6 +9,7 @@ RUN apt update && apt install -y \
     bison                        \
     dvipng                       \
     flex                         \
+    g++                          \
     gawk                         \
     gforth                       \
     git                          \

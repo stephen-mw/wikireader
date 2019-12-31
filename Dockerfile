@@ -18,7 +18,7 @@ RUN apt update && apt install -y \
     mecab-ipadic-utf8            \
     netpbm                       \
     ocaml                        \
-    paralell                     \
+    parallel                     \
     python-dev                   \
     python-gd                    \
     python-lzma                  \

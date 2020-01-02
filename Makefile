@@ -194,7 +194,7 @@ WIKI_VERSION ?= $(shell date '+%Y%m%d')
 
 MACHINE_COUNT ?= 9
 PARALLEL_BUILD ?= 3
-MAX_CONCURRENCY ?= ${PARALLEL_BUILD}
+MAX_CONCURRENCY ?= $(nproc --all)
 
 # Installation
 # ============

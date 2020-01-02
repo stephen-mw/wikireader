@@ -53,7 +53,8 @@ make sure you have enough space on the device to temporary duplicate the file.
                 output.write(line)
         # Replace the old file with the deduped file
         os.rename(tmp_file, args.input)
-
+    except KeyboardInterrupt:
+        pass
     finally:
         # Cleanup if necessary
         if os.path.exists(tmp_file):

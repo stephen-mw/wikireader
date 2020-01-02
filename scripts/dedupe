@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import argparse
 from re import compile
 
@@ -14,39 +15,48 @@ def main():
     desc = """\
 Remove duplicate titles from a wikimedia dump.
 
-This script will scan through a wikimeda dump. If a duplicate title is found,
-then it will be renamed with an appended "(dupe)" string added to the end.
+This script will scan through a wikimeda dump. Any duplicate titles will be
+skipped. This script creates a temporary file and then replaces the original
+file.
 
-Beware that it creates a new file the same size as the original. Make sure you
-have enough space on your system for it."""
+Beware that the temporary file is roughly the same size as the original, so
+make sure you have enough space on the device to temporary duplicate the file.
+"""
 
-    parser = argparse.ArgumentParser(description=desc)
+    parser = argparse.ArgumentParser(
+        description=desc, formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument(
         "input", metavar="<intput file>", help="the input file to parse"
     )
-    parser.add_argument(
-        "output", metavar="<input file>", help="the deduplicated output file to create"
-    )
 
+    args = parser.parse_args()
+
+    tmp_file = args.input + ".tmp"
     # Signal whether the title should be skipped
     skip = False
-    args = parser.parse_args()
-    output = open(args.output, "w")
-    with open(args.input) as _file:
-        for line in _file:
-            if skip:
-                if END_REGEX.match(line):
-                    skip = False
-                continue
-            match = TITLE_REGEX.match(line)
-            if match:
-                title = match.group(1)
-                if title in TITLES:
-                    print("Duplicate title: " + title)
-                    skip = True
+    try:
+        output = open(tmp_file, "w")
+        with open(args.input) as _file:
+            for line in _file:
+                if skip:
+                    if END_REGEX.match(line):
+                        skip = False
                     continue
-                TITLES.add(title)
-            output.write(line)
+                match = TITLE_REGEX.match(line)
+                if match:
+                    title = match.group(1)
+                    if title in TITLES:
+                        print("Duplicate title: " + title)
+                        skip = True
+                        continue
+                    TITLES.add(title)
+                output.write(line)
+        # Replace the old file with the deduped file
+        os.rename(tmp_file, args.input)
 
+    finally:
+        # Cleanup if necessary
+        if os.path.exists(tmp_file):
+            os.remove(tmp_file)
 
 main()

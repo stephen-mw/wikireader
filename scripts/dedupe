@@ -3,7 +3,8 @@
 import argparse
 from re import compile
 
-REGEX = compile("\s+<title>(.*)<\/title>$")
+TITLE_REGEX = compile("\s+<title>(.*)<\/title>$")
+END_REGEX = compile("\s+<\/page>$")
 TITLES = set()
 
 
@@ -27,17 +28,23 @@ have enough space on your system for it."""
         "output", metavar="<input file>", help="the deduplicated output file to create"
     )
 
+    # Signal whether the title should be skipped
+    skip = False
     args = parser.parse_args()
     output = open(args.output, "w")
     with open(args.input) as _file:
         for line in _file:
-            match = REGEX.match(line)
+            if skip:
+                if END_REGEX.match(line):
+                    skip = False
+                continue
+            match = TITLE_REGEX.match(line)
             if match:
                 title = match.group(1)
                 if title in TITLES:
                     print("Duplicate title: " + title)
-                    new = title + " (dupe)"
-                    line = line.replace(title, new)
+                    skip = True
+                    continue
                 TITLES.add(title)
             output.write(line)
 

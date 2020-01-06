@@ -503,7 +503,6 @@ parse: validate-destdir
 
 .PHONY: render
 render: fonts validate-destdir
-	sem --jobs ${MAX_CONCURRENCY} --id WIKIREADER --fg -u -- \
 	${MAKE} -C "${HOST_TOOLS}/offline-renderer" render \
 		WIKI_LANGUAGE="${WIKI_LANGUAGE}" \
 		WIKI_LANGUAGE_VARIANT="${WIKI_LANGUAGE_VARIANT}" \

@@ -1010,7 +1010,10 @@ class WrProcess(HTMLParser.HTMLParser):
             self.tag_stack = []
             self.in_html = False
             esc_code1()
-            write_article(self.language_links)
+            try:
+                write_article(self.language_links)
+            except Exception as err:
+                PrintLog.message(u'Failure writing article %s: %s' % (g_this_article_title, str(err)))
             return
 
         if not self.printing:
@@ -1295,7 +1298,7 @@ class WrProcess(HTMLParser.HTMLParser):
                 try:
                     make_link(url, url_x0, x0, line[-1][0])
                 except Exception as err:
-                    PrintLog("failure making link %s: %s" % (url, str(err)))
+                    PrintLog.message(u"failure making link %s: %s" % (url, str(err)))
 
 
 def link_number(url):

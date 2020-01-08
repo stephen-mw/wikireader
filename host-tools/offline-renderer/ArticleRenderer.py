@@ -495,9 +495,12 @@ def make_link(url, x0, x1, text):
     global g_starty, g_curr_face, g_link_cnt, g_links
 
     if article_index(url):
-        esc_code10(x1 - x0)
-        g_links[g_link_cnt] = (x0, g_starty - get_lineheight(g_curr_face), x1, g_starty, url)
-        g_link_cnt =  g_link_cnt + 1
+        try:
+            esc_code10(x1 - x0)
+            g_links[g_link_cnt] = (x0, g_starty - get_lineheight(g_curr_face), x1, g_starty, url)
+            g_link_cnt =  g_link_cnt + 1
+        except Exception as err:
+            PrintLog.message(u'Exception making link %s: %s' % url, str(err))
 
 
 def get_imgdata(imgfile, indent):
@@ -1295,10 +1298,7 @@ class WrProcess(HTMLParser.HTMLParser):
                 x0 += i[3]
 
             if url != None:
-                try:
-                    make_link(url, url_x0, x0, line[-1][0])
-                except Exception as err:
-                    PrintLog.message(u"failure making link %s: %s" % (url, str(err)))
+                make_link(url, url_x0, x0, line[-1][0])
 
 
 def link_number(url):

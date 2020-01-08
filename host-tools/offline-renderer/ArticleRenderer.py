@@ -1295,8 +1295,7 @@ class WrProcess(HTMLParser.HTMLParser):
                 try:
                     make_link(url, url_x0, x0, line[-1][0])
                 except Exception as err:
-                    PrintLog("failure making link %s in line %s: %s" % (
-                    url, line, str(err)))
+                    PrintLog("failure making link %s: %s" % (url, str(err)))
 
 
 def link_number(url):

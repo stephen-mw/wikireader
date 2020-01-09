@@ -500,7 +500,7 @@ def make_link(url, x0, x1, text):
             g_links[g_link_cnt] = (x0, g_starty - get_lineheight(g_curr_face), x1, g_starty, url)
             g_link_cnt =  g_link_cnt + 1
         except Exception as err:
-            PrintLog.message(u'Exception making link %s: %s' % url, str(err))
+            PrintLog.message(u'Exception making link %s: %s' % (url, str(err)))
 
 
 def get_imgdata(imgfile, indent):

@@ -492,7 +492,7 @@ def get_lineheight(face):
 
 
 def make_link(url, x0, x1, text):
-    global g_starty, g_curr_face, g_link_cnt, g_links
+    global g_starty, g_curr_face, g_link_cnt, g_links, g_this_article_title
 
     if article_index(url):
         try:
@@ -500,7 +500,7 @@ def make_link(url, x0, x1, text):
             g_links[g_link_cnt] = (x0, g_starty - get_lineheight(g_curr_face), x1, g_starty, url)
             g_link_cnt =  g_link_cnt + 1
         except Exception as err:
-            PrintLog.message(u'Exception making link {0:s}: {1:s}'.format(url, err.message))
+            PrintLog.message(u'Exception making link {0:s} in article {1:s}: {2:s}'.format(url, g_this_article_title, err.message))
 
 
 def get_imgdata(imgfile, indent):

@@ -500,7 +500,7 @@ def make_link(url, x0, x1, text):
             g_links[g_link_cnt] = (x0, g_starty - get_lineheight(g_curr_face), x1, g_starty, url)
             g_link_cnt =  g_link_cnt + 1
         except Exception as err:
-            PrintLog.message(u'Exception making link %s: %s' % (url, str(err)))
+            PrintLog.message(u'Exception making link {0:s}: {1:s}'.format(url, err.message))
 
 
 def get_imgdata(imgfile, indent):
@@ -1016,7 +1016,7 @@ class WrProcess(HTMLParser.HTMLParser):
             try:
                 write_article(self.language_links)
             except Exception as err:
-                PrintLog.message(u'Failure writing article %s: %s' % (g_this_article_title, str(err)))
+                PrintLog.message(u'Failure writing article {0:s} -- skipping: {1:s}'.format(g_this_article_title, err.message))
             return
 
         if not self.printing:

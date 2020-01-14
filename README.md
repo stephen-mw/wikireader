@@ -1,6 +1,17 @@
 # Wikireader build utilies
 This repo (and docker container) contain the tools necessary to build an updated wikireader image.
 
+# Get the latest image
+Pull it down from dockerhub
+```
+docker pull stephenmw/wikireader
+```
+
+Or you can build it yourself after checking out the repo.
+```
+docker build -t <image name> .
+```
+
 # Building
 You must do a parallized build in order to create `dat` files that are small enough for the wikireader. Parallelism is controlled via parameters of the `Run` script.
 

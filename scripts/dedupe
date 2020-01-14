@@ -50,6 +50,31 @@ SKIP = [
     "Liss (band)",
     "Index of Shenzhen-related articles",
     "Ekhane Aakash Neel Season 2",
+    "List of Iranian actresses",
+    "Rock and roll in article Jerry Allison",
+    "John F. Kennedy in article Frank McGee (journalist)",
+    "National League Championship Series in article New York Mets award winners and league leaders",
+    "Khamba Thoibi in article Lai Haraoba",
+    "Admont Abbey in article Counts of Andechs",
+    "Sri MadhwaVijaya in article Puttige Matha",
+    "Holidays Rule in article We Need a Little Christmas",
+    "Caramelldansen in article Ryutaro Nakahara",
+    "César Franck in article List of organ composers",
+    "New7Wonders of Nature in article Seven Natural Wonders (CNN)",
+    "Paska (bread) in article Kulich",
+    "Euphoria (Indian band) in article University College of Medical Sciences",
+    "Osun State in article Olojo festival",
+    "Ivory Coast in article Neoeburnella",
+    "Zee Telugu in article Poove Poochudava (TV series)",
+    "Sportswear (activewear) in article Lily Alfonso",
+    "Los Angeles Opera in article Marc Stern",
+    "Dakuten in article Code page 896",
+    "Dakuten in article Code page 896",
+    "Allahabad University in article Vishwanath Pratap Singh",
+    "￩ in article Bar (diacritic)",
+    "Parshvanatha in article Timeline of Eastern philosophers",
+    "Udyotakara in article Timeline of Eastern philosophers",
+    "Nonpoint in article It Lies Within",
 ]
 
 def main():
@@ -87,7 +112,7 @@ make sure you have enough space on the device to temporary duplicate the file.
                     continue
 
                 # Strip out unsupported magic template
-                line = MAGIC_REGEX.sub("", line)
+                # line = MAGIC_REGEX.sub("", line)
 
                 # Check for a duplicated file
                 match = TITLE_REGEX.match(line)

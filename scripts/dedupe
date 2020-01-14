@@ -2,12 +2,55 @@
 
 import os
 import argparse
-from re import compile
+import re
 
-TITLE_REGEX = compile("\s+<title>(.*)<\/title>$")
-END_REGEX = compile("\s+<\/page>$")
+TITLE_REGEX = re.compile("\s+<title>(.*)<\/title>$")
+END_REGEX = re.compile("\s+<\/page>$")
+MAGIC_REGEX = re.compile("{{#invoke.*?}}", re.MULTILINE)
 TITLES = set()
 
+SKIP = [
+    "Stripe-headed round-eared bat",
+    "Chromolaena odorata",
+    "Termez",
+    "Punjab Engineering College",
+    "New York Mets award winners and league leaders",
+    "Home Ministry",
+    "Kristina Lilley",
+    "OBJ",
+    "Debate on traditional and simplified Chinese characters",
+    "Melita F.C.",
+    "Chuck Hazama",
+    "Augustin-Joseph de Mailly",
+    "Tikota",
+    "Sahu Jats",
+    "Timelines of Ottoman Syria history",
+    "Superman curse",
+    "Garud Commando Force",
+    "Hiba Tawaji",
+    "Nanganur",
+    "Olojo festival",
+    "Piko (singer)",
+    "Maanagara Kaaval",
+    "1932 in Mandatory Palestine",
+    "1926 in Mandatory Palestine",
+    "Demographics of the world",
+    "E.tv News",
+    "Yury Khovansky",
+    "Donald Brown (defensive back)",
+    "List of serving generals of the Bangladesh Army",
+    "Anshel Pfeffer",
+    "Donkey Kong (character)",
+    "Big Magic",
+    "Timeline of Eastern philosophers",
+    "Intelligence Bureau (India)",
+    "Kathua",
+    "HD 89345 b",
+    "EReality",
+    "Liss (band)",
+    "Index of Shenzhen-related articles",
+    "Ekhane Aakash Neel Season 2",
+]
 
 def main():
     """Run the main program"""
@@ -42,9 +85,18 @@ make sure you have enough space on the device to temporary duplicate the file.
                     if END_REGEX.match(line):
                         skip = False
                     continue
+
+                # Strip out unsupported magic template
+                line = MAGIC_REGEX.sub("", line)
+
+                # Check for a duplicated file
                 match = TITLE_REGEX.match(line)
                 if match:
                     title = match.group(1)
+                    if title in SKIP:
+                        print("Skipping title: " + title)
+                        skip = True
+                        continue
                     if title in TITLES:
                         print("Duplicate title: " + title)
                         skip = True

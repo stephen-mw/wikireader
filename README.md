@@ -30,11 +30,8 @@ After deduping, you'll either need to place or symlink the wikipedia file into t
 # Commands for building
 The below commands assume you've downloaded a wikipedia dump to the `build` directory. I'm using the Dec 20 dump as an example.
 ```
-# Dedupe the wikipedia file and create one with a generic name. Note, this creates a new large file. Make sure you have enough space.
+# Dedupe the wikipedia file. Note that this creates a temporary file of roughly the same size until the process is finished. Make sure you have enough space.
 scripts/remove_dupes build/enwiki-20191201-pages-articles.xml build/enwiki-pages-articles.xml
-
-# Optionally delete the old, 70GB file
-rm build/enwiki-20191201-pages-articles.xml
 
 # Launch docker and share the build directory with `/build`. Make sure you run this from your `wikireader` directory.
 docker run --rm -v $(pwd)/build:/build -ti stephenmw/wikireader:latest bash

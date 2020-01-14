@@ -44,13 +44,13 @@ export MAX_CONCURRENCY=8
 export RUNVER="test"
 
 # Start the processing and wait a really link time (4.5 days for me)
-time scripts/Run --parallel=16 --machines=1 --farm=1 --work=/build/${RUNVER}/work --dest=/build/${RUNVER}/image --temp=/dev/shm --clear ::::::: 2>&1 < /dev/null | tee /build/${RUNVER}.log
+time scripts/Run --parallel=16 --machines=1 --farm=1 --work=/build/${RUNVER}/work --dest=/build/${RUNVER}/image --temp=/dev/shm --clear ::::::: 2>&1 < /dev/null
 
 # Combine the files and create the image
 make WORKDIR=/build/${RUNVER}/work DESTDIR=/build/${RUNVER}/image combine install
 
 # Remove / cleanup the work directory
-rm -rfv /build/${RUNVER}/wor
+rm -rfv /build/${RUNVER}/work
 ```
 
 After this process, you can shutdown your container. The new image will be found under `build/${RUNVER}/image`. You can copy this entire directory over to your SD card.

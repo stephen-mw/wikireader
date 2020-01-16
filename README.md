@@ -23,15 +23,17 @@ On my machine, which is an 4 core 8 thread i7 with 32 GB of ram, I find that run
 By default docker doesn't share a lot of resources. You'll want to max out the CPU and memory share to your container in your docker configuration.
 
 # Preparing a wikipedia dump file
-Wikipedia dump files can be downloaded directly from wikipedia. There's some preparation you'll need to do to the file before it will work. First, you'll need to dedupe the titles in the file. There's an included script you can run in order to dedupe the files.
+Wikipedia dump files can be downloaded directly from wikipedia. There's some preparation you'll need to do to the file before it will work. You'll need to dedupe the titles as well as cleanup some of the unnused template (```{{#invoke:....}}```).
 
-After deduping, you'll either need to place or symlink the wikipedia file into the `wikireader` directory, since the `Run` script has rigid rules about the files. Since you probably don't want to upload the entire file to your docker context, this is best solved by sharing the `build` directory with your docker container and then symlinking into your wikireader directory (see the script parameters at the bottom to see how it's done).
+You can use the `scripts/clean_xml` script to complete that task. By default it will cleanup the XML file. Beware that this script temporarily create a new file the same size as the original, so make sure you have enough space.
+
+After cleanup, you'll either need to place or symlink the wikipedia file into the `wikireader` directory, since the `Run` script has rigid rules about the files. Since you probably don't want to upload the entire file to your docker context, this is best solved by sharing the `build` directory with your docker container and then symlinking into your wikireader directory (see the script parameters at the bottom to see how it's done).
 
 # Commands for building
 The below commands assume you've downloaded a wikipedia dump to the `build` directory. I'm using the Dec 20 dump as an example.
 ```
-# Dedupe the wikipedia file. Note that this creates a temporary file of roughly the same size until the process is finished. Make sure you have enough space.
-scripts/remove_dupes build/enwiki-20191201-pages-articles.xml
+# Dedupe/clean the wikipedia file. Note that this creates a temporary file of roughly the same size until the process is finished. Make sure you have enough space.
+scripts/clean_xml build/enwiki-20191201-pages-articles.xml
 
 # Launch docker and share the build directory with `/build`. Make sure you run this from your `wikireader` directory.
 docker run --rm -v $(pwd)/build:/build -ti stephenmw/wikireader:latest bash

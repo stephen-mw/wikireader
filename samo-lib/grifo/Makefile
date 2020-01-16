@@ -44,7 +44,7 @@ include ${MK_DIR}/definitions.mk
 INSTALL_GRIFO_SIMULATION ?= NO
 BUILD_EXAMPLES ?= NO
 
-$(call REQUIRED_BINARY, guile, guile-1.8)
+$(call REQUIRED_BINARY, guile, guile)
 
 INCLUDES += -Isrc
 INCLUDES += -I-

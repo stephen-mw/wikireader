@@ -6,76 +6,9 @@ import re
 
 TITLE_REGEX = re.compile("\s+<title>(.*)<\/title>$")
 END_REGEX = re.compile("\s+<\/page>$")
-MAGIC_REGEX = re.compile("{{#invoke.*?}}", re.MULTILINE)
-TITLES = set()
+MAGIC_REGEX = re.compile('{{#invoke.*}}', re.DOTALL)
 
-SKIP = [
-    "Stripe-headed round-eared bat",
-    "Chromolaena odorata",
-    "Termez",
-    "Punjab Engineering College",
-    "New York Mets award winners and league leaders",
-    "Home Ministry",
-    "Kristina Lilley",
-    "OBJ",
-    "Debate on traditional and simplified Chinese characters",
-    "Melita F.C.",
-    "Chuck Hazama",
-    "Augustin-Joseph de Mailly",
-    "Tikota",
-    "Sahu Jats",
-    "Timelines of Ottoman Syria history",
-    "Superman curse",
-    "Garud Commando Force",
-    "Hiba Tawaji",
-    "Nanganur",
-    "Olojo festival",
-    "Piko (singer)",
-    "Maanagara Kaaval",
-    "1932 in Mandatory Palestine",
-    "1926 in Mandatory Palestine",
-    "Demographics of the world",
-    "E.tv News",
-    "Yury Khovansky",
-    "Donald Brown (defensive back)",
-    "List of serving generals of the Bangladesh Army",
-    "Anshel Pfeffer",
-    "Donkey Kong (character)",
-    "Big Magic",
-    "Timeline of Eastern philosophers",
-    "Intelligence Bureau (India)",
-    "Kathua",
-    "HD 89345 b",
-    "EReality",
-    "Liss (band)",
-    "Index of Shenzhen-related articles",
-    "Ekhane Aakash Neel Season 2",
-    "List of Iranian actresses",
-    "Rock and roll in article Jerry Allison",
-    "John F. Kennedy in article Frank McGee (journalist)",
-    "National League Championship Series in article New York Mets award winners and league leaders",
-    "Khamba Thoibi in article Lai Haraoba",
-    "Admont Abbey in article Counts of Andechs",
-    "Sri MadhwaVijaya in article Puttige Matha",
-    "Holidays Rule in article We Need a Little Christmas",
-    "Caramelldansen in article Ryutaro Nakahara",
-    "César Franck in article List of organ composers",
-    "New7Wonders of Nature in article Seven Natural Wonders (CNN)",
-    "Paska (bread) in article Kulich",
-    "Euphoria (Indian band) in article University College of Medical Sciences",
-    "Osun State in article Olojo festival",
-    "Ivory Coast in article Neoeburnella",
-    "Zee Telugu in article Poove Poochudava (TV series)",
-    "Sportswear (activewear) in article Lily Alfonso",
-    "Los Angeles Opera in article Marc Stern",
-    "Dakuten in article Code page 896",
-    "Dakuten in article Code page 896",
-    "Allahabad University in article Vishwanath Pratap Singh",
-    "￩ in article Bar (diacritic)",
-    "Parshvanatha in article Timeline of Eastern philosophers",
-    "Udyotakara in article Timeline of Eastern philosophers",
-    "Nonpoint in article It Lies Within",
-]
+TITLES = set()
 
 def main():
     """Run the main program"""
@@ -96,45 +29,54 @@ make sure you have enough space on the device to temporary duplicate the file.
     parser.add_argument(
         "input", metavar="<intput file>", help="the input file to parse"
     )
+    parser.add_argument(
+        "-k", "--keep", action="store_true", help="Don't replace the original file"
+    )
+
+
 
     args = parser.parse_args()
 
-    tmp_file = args.input + ".tmp"
-    # Signal whether the title should be skipped
-    skip = False
+    tmp_file = args.input + ".clean"
+    article = False
+    content = ""
+    title = None
+
     try:
         output = open(tmp_file, "w")
         with open(args.input) as _file:
             for line in _file:
-                if skip:
-                    if END_REGEX.match(line):
-                        skip = False
-                    continue
-
-                # Strip out unsupported magic template
-                # line = MAGIC_REGEX.sub("", line)
-
-                # Check for a duplicated file
                 match = TITLE_REGEX.match(line)
                 if match:
+                    article = True
                     title = match.group(1)
-                    if title in SKIP:
-                        print("Skipping title: " + title)
-                        skip = True
-                        continue
+
+                if not article:
+                    output.write(line)
+                    continue
+
+                content += line
+
+                if END_REGEX.match(line):
                     if title in TITLES:
-                        print("Duplicate title: " + title)
-                        skip = True
-                        continue
-                    TITLES.add(title)
-                output.write(line)
+                        print('Duplicate title: "%s" -- skipping' % title)
+                    else:
+                        TITLES.add(title)
+                        content = MAGIC_REGEX.sub("", content)
+                        output.write(content)
+
+                    # Reset
+                    content = ""
+                    article = False
+
         # Replace the old file with the deduped file
-        os.rename(tmp_file, args.input)
+        if not args.keep:
+            os.rename(tmp_file, args.input)
     except KeyboardInterrupt:
         pass
     finally:
         # Cleanup if necessary
-        if os.path.exists(tmp_file):
+        if os.path.exists(tmp_file) and not args.keep:
             os.remove(tmp_file)
 
 main()

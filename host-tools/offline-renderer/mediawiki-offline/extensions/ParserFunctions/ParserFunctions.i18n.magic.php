@@ -25,6 +25,7 @@ function efParserFunctionsWords( $lang ) {
 		'timel'      => array( 0, 'timel' ),
 		'rel2abs'    => array( 0, 'rel2abs' ),
 		'titleparts' => array( 0, 'titleparts' ),
+		'invoke'     => array(0, 'invoke'),
 	);
 
 	/**

@@ -48,11 +48,14 @@ class ExtParserFunctions {
 		$parser->setFunctionHook( 'timel', array( &$this, 'localTime' ) );
 		$parser->setFunctionHook( 'rel2abs', array( &$this, 'rel2abs' ) );
 		$parser->setFunctionHook( 'titleparts', array( &$this, 'titleparts' ) );
-		$parser->setFunctionHook( 'noOp', array( &$this, 'invoke' ) );
-		$parser->setFunctionHook( 'noOp', array( &$this, 'Info' ) );
+		$parser->setFunctionHook( 'invoke', array( &$this, 'noOp' ) );
 
 		return true;
 	}
+
+	function noOp( $parser, $args ) {
+            return "";
+        }
 
 	function clearState(&$parser) {
 		$this->mTimeChars = 0;
@@ -529,11 +532,7 @@ class ExtParserFunctions {
 		}
 	}
 
-    function noOp( &$parser) {
-        // No-op to support wikireader
-		return "";
-	}
-}
+        }
 
 function wfSetupParserFunctions() {
 	global $wgParser, $wgExtParserFunctions, $wgHooks;

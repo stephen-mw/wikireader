@@ -48,6 +48,8 @@ class ExtParserFunctions {
 		$parser->setFunctionHook( 'timel', array( &$this, 'localTime' ) );
 		$parser->setFunctionHook( 'rel2abs', array( &$this, 'rel2abs' ) );
 		$parser->setFunctionHook( 'titleparts', array( &$this, 'titleparts' ) );
+		$parser->setFunctionHook( 'noOp', array( &$this, 'invoke' ) );
+		$parser->setFunctionHook( 'noOp', array( &$this, 'Info' ) );
 
 		return true;
 	}
@@ -525,6 +527,11 @@ class ExtParserFunctions {
 		} else {
 			return $title;
 		}
+	}
+
+    function noOp( &$parser) {
+        // No-op to support wikireader
+		return "";
 	}
 }
 

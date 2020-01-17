@@ -5,8 +5,11 @@ import argparse
 import re
 
 TITLE_REGEX = re.compile("\s+<title>(.*)<\/title>$")
+START_REGEX = re.compile("\s+<page>$")
 END_REGEX = re.compile("\s+<\/page>$")
-MAGIC_REGEX = re.compile('{{#invoke.*}}', re.DOTALL)
+
+# Remove matches
+CLEAN_REGEX = re.compile('{{(Info|#).*?}}', re.DOTALL)
 
 TITLES = set()
 
@@ -46,27 +49,32 @@ make sure you have enough space on the device to temporary duplicate the file.
         output = open(tmp_file, "w")
         with open(args.input) as _file:
             for line in _file:
-                match = TITLE_REGEX.match(line)
-                if match:
+                if START_REGEX.match(line):
                     article = True
-                    title = match.group(1)
 
                 if not article:
                     output.write(line)
                     continue
 
+                tmatch = TITLE_REGEX.match(line)
+                if tmatch:
+                    title = tmatch.group(1)
+
                 content += line
 
                 if END_REGEX.match(line):
+                    assert title, "Title not correctly set for article"
+
                     if title in TITLES:
                         print('Duplicate title: "%s" -- skipping' % title)
                     else:
                         TITLES.add(title)
-                        content = MAGIC_REGEX.sub("", content)
+                        #CLEAN_REGEX.sub("", content)
                         output.write(content)
 
                     # Reset
                     content = ""
+                    title = None
                     article = False
 
         # Replace the old file with the deduped file

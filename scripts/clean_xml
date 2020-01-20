@@ -33,7 +33,7 @@ make sure you have enough space on the device to temporary duplicate the file.
         "-k", "--keep", action="store_true", help="Don't replace the original file"
     )
     parser.add_argument(
-        "-i", "--ignore_file", help="A file with titles to ignore. Each on a new line.")
+        "-i", "--ignore_file", help="A file with titles to ignore. Each on a new line."
     )
 
 

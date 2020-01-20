@@ -13,6 +13,7 @@ RUN apt update && apt install -y \
     gawk                         \
     gforth                       \
     git                          \
+    guile-2.2                    \
     libqt4-dev                   \
     m4                           \
     make                         \
@@ -27,6 +28,7 @@ RUN apt update && apt install -y \
     python-serial                \
     qt4-qmake                    \
     sqlite3                      \
+    vim                          \
     wget                         \
     xfonts-utils
 
@@ -42,9 +44,10 @@ RUN apt update && apt install -y \
     php5.6-xml
 RUN ln -s /usr/bin/php5.6 /usr/bin/php5
 
-RUN git clone https://github.com/stephen-mw/wikireader.git /wikireader && \
-    tar xvf required_packages.tgz && \
-    cd packages && dpkg -i *
+# Removing the annoying gnu parallel prompt
+RUN mkdir /root/.parallel && touch /root/.parallel/will-cite
+
+RUN git clone https://github.com/stephen-mw/wikireader.git /wikireader
 
 # There will be a binutils failure here
 RUN make clean && make requirements && make || true

@@ -495,9 +495,12 @@ def make_link(url, x0, x1, text):
     global g_starty, g_curr_face, g_link_cnt, g_links, g_this_article_title
 
     if article_index(url):
-        esc_code10(x1 - x0)
-        g_links[g_link_cnt] = (x0, g_starty - get_lineheight(g_curr_face), x1, g_starty, url)
-        g_link_cnt =  g_link_cnt + 1
+        try:
+            esc_code10(x1 - x0)
+            g_links[g_link_cnt] = (x0, g_starty - get_lineheight(g_curr_face), x1, g_starty, url)
+            g_link_cnt =  g_link_cnt + 1
+        except Exception as err:
+            PrintLog.message(u'Exception making link {0:s} in article {1:s}: {2:s}'.format(url, g_this_article_title, err.message))
 
 
 def get_imgdata(imgfile, indent):
@@ -1010,7 +1013,10 @@ class WrProcess(HTMLParser.HTMLParser):
             self.tag_stack = []
             self.in_html = False
             esc_code1()
-            write_article(self.language_links)
+            try:
+                write_article(self.language_links)
+            except Exception as err:
+                PrintLog.message(u'Failure writing article {0:s} -- skipping: {1:s}'.format(g_this_article_title, err.message))
             return
 
         if not self.printing:
@@ -1300,7 +1306,7 @@ def link_number(url):
 
     try:
         n = article_index(url)[0]
-    except:
+    except KeyError:
         n = -1
     return n
 
@@ -1390,7 +1396,7 @@ def write_article(language_links):
             (article_number, fnd_offset, restricted) = article_index(g_this_article_title)
             restricted =  bool(int(restricted))  # '0' is True so turn it into False
             article_writer.add_article(article_number, whole_article, fnd_offset, restricted)
-        except:
+        except KeyError:
             PrintLog.message(u'Error in: write_article, Title not found')
             PrintLog.message(u'Title:  {0:s}'.format(g_this_article_title))
             PrintLog.message(u'Count:  {0:s}'.format(article_count))

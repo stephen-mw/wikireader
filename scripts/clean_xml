@@ -30,13 +30,10 @@ make sure you have enough space on the device to temporary duplicate the file.
         "input", metavar="<intput file>", help="the input file to parse"
     )
     parser.add_argument(
-        "-n", "--no_replace", action="store_true", help="Don't replace the original file"
+        "-k", "--keep", action="store_true", help="Don't replace the original file"
     )
     parser.add_argument(
         "-i", "--ignore_file", help="A file with titles to ignore. Each on a new line."
-    )
-    parser.add_argument(
-        "-k", "--keep_file", help="A file with titles to keep. Everything else ignored."
     )
 
 
@@ -50,14 +47,7 @@ make sure you have enough space on the device to temporary duplicate the file.
     ignore = []
     if args.ignore_file:
         with open(args.ignore_file) as _file:
-            for line in _file:
-                ignore.append(line.replace("\n", ""))
-
-    keep = []
-    if args.keep_file:
-        with open(args.keep_file) as _file:
-            for line in _file:
-                keep.append(line.replace("\n", ""))
+            ignore = _file.readlines()
 
     try:
         output = open(tmp_file, "w")
@@ -79,18 +69,13 @@ make sure you have enough space on the device to temporary duplicate the file.
                 if END_REGEX.match(line):
                     assert title, "Title not correctly set for article"
 
-                    if keep and title in keep and title not in TITLES:
-                        print("Keeping title: %s" % title)
+                    if title in ignore:
+                        print('Title "%s" in ignore file -- skipping' % title)
+                    elif title in TITLES:
+                        print('Duplicate title: "%s" -- skipping' % title)
+                    else:
                         TITLES.add(title)
                         output.write(content)
-                    else:
-                        if title in ignore:
-                            print('Title "%s" in ignore file -- skipping' % title)
-                        elif title in TITLES:
-                            print('Duplicate title: "%s" -- skipping' % title)
-                        else:
-                            TITLES.add(title)
-                            output.write(content)
 
                     # Reset
                     content = ""
@@ -98,13 +83,13 @@ make sure you have enough space on the device to temporary duplicate the file.
                     article = False
 
         # Replace the old file with the deduped file
-        if not args.no_replace:
+        if not args.keep:
             os.rename(tmp_file, args.input)
     except KeyboardInterrupt:
         pass
     finally:
         # Cleanup if necessary
-        if os.path.exists(tmp_file) and not args.no_replace:
+        if os.path.exists(tmp_file) and not args.keep:
             os.remove(tmp_file)
 
 main()

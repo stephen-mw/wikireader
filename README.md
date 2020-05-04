@@ -80,7 +80,7 @@ After this process, you can shutdown your container. The new image will be found
 # Building on multiple computers
 The `Run` script also allows you to build on multiple computers. The caveat is that the computers should have similar resources, since the work is split evenly. The process is exactly the same as building with 1 computer, except you change the `--farm=N` flag and `--machines=N` flag.
 
-After the build completes, you copy the `.dat` files to the image directory on either computer for the final combine phase.
+After the build completes, you copy the `.dat` files to one of the computers (either one) in order to finish the last combine step.
 
 ```
 # Note the -8 in the command field. This will ensure that of the 16 shards, 8 are built per host (8 * 2 computers = 16 shards).

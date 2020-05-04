@@ -58,14 +58,14 @@ scripts/clean_xml build/enwiki-20191201-pages-articles.xml
 # Launch docker and share the build directory with `/build`. Make sure you run this from your `wikireader` directory.
 docker run --rm -v $(pwd)/build:/build -ti stephenmw/wikireader:latest bash
 
-# Symlink over the file
-ln -s /build/enwiki-pages-articles.xml enwiki-pages-articles.xml
+# Symlink the file to create a filename expected by the processing application. The actual file name will vary depending on which dump of the wikimedia software you downloaded.
+ln -s /build/enwiki-20191201-pages-articles.xml enwiki-pages-articles.xml
 
-# Set the max concurrency and give this attempt a name. I use 8 for my system. Use whatever works for you.
+# Set the max concurrency and give this attempt a name. I use 8 for my system. Use whatever works for you. I recommend you use high parallel counts with the number of cores you have minus 1. Keep in mind there's skew in the processing and the first worker will take about 2x longer than the others.
 export MAX_CONCURRENCY=8 
 export RUNVER="test"
 
-# Start the processing and wait a really link time (4.5 days for me)
+# Start the processing and wait a really link time (4.5 days for me). The `parallel=16` creates 16 shards but doesn't actually run them all in parallel. See MAX_CONCURRENCY for adjusting that. This parallel number must be greater than 4 to create files small enough to fit onto a FAT32 SD card.
 time scripts/Run --parallel=16 --machines=1 --farm=1 --work=/build/${RUNVER}/work --dest=/build/${RUNVER}/image --temp=/dev/shm --clear ::::::: 2>&1 < /dev/null
 
 # Combine the files and create the image

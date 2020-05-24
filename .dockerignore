@@ -1,4 +1,4 @@
-build/
-backup/
+build/*
+backup/*
 *.log
 notes

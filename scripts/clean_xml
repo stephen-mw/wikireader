@@ -1,8 +1,17 @@
 #!/usr/bin/env python
+"""
+Parse the wikipedia XML dumps into a more suitable format.
 
-import os
+This library pipes out to the wtf_wikipedia js library to cleanup the XML.
+"""
+
 import argparse
+import os
 import re
+import subprocess
+import sys
+
+import xml.etree.ElementTree as ET
 
 TITLE_REGEX = re.compile("\s+<title>(.*)<\/title>$")
 START_REGEX = re.compile("\s+<page>$")
@@ -10,22 +19,23 @@ END_REGEX = re.compile("\s+<\/page>$")
 
 TITLES = set()
 
+
 def main():
     """Run the main program"""
 
     desc = """\
-Remove duplicate titles from a wikimedia dump.
+Remove duplicate titles from the wikimedia XML dumps and cleanup the text.
 
-This script will scan through a wikimeda dump. Any duplicate titles will be
-skipped. This script creates a temporary file and then replaces the original
-file.
+Any duplicate titles will be skipped. This script creates a temporary file and
+then replaces the original file.
 
 Beware that the temporary file is roughly the same size as the original, so
 make sure you have enough space on the device to temporary duplicate the file.
 """
 
     parser = argparse.ArgumentParser(
-        description=desc, formatter_class=argparse.RawTextHelpFormatter)
+        description=desc, formatter_class=argparse.RawTextHelpFormatter
+    )
     parser.add_argument(
         "input", metavar="<intput file>", help="the input file to parse"
     )
@@ -35,13 +45,18 @@ make sure you have enough space on the device to temporary duplicate the file.
     parser.add_argument(
         "-i", "--ignore_file", help="A file with titles to ignore. Each on a new line."
     )
-
+    parser.add_argument(
+        "--progress", action="store_true", help="Print the progress to stdout."
+    )
 
     args = parser.parse_args()
 
+    # For progress, we'll print the number of articles as well as a rough
+    # estimate of progress via measuring bytes processed
+    processed = 0
+
     tmp_file = args.input + ".clean"
     article = False
-    content = ""
     title = None
 
     ignore = []
@@ -52,6 +67,7 @@ make sure you have enough space on the device to temporary duplicate the file.
     try:
         output = open(tmp_file, "w")
         with open(args.input) as _file:
+            page = ""
             for line in _file:
                 if START_REGEX.match(line):
                     article = True
@@ -60,28 +76,47 @@ make sure you have enough space on the device to temporary duplicate the file.
                     output.write(line)
                     continue
 
+                # Increment the bytes processed
+                page += line
+
                 tmatch = TITLE_REGEX.match(line)
                 if tmatch:
                     title = tmatch.group(1)
 
-                content += line
-
                 if END_REGEX.match(line):
                     assert title, "Title not correctly set for article"
 
+                    # Parse the XML for the article to text
                     if title in ignore:
                         print('Title "%s" in ignore file -- skipping' % title)
                     elif title in TITLES:
                         print('Duplicate title: "%s" -- skipping' % title)
                     else:
-                        TITLES.add(title)
-                        output.write(content)
+                        bad = False
+                        for k in ["<page", "</page>", "<text", "</text>"]:
+                            if k not in page:
+                                print(f"Bad XML in title {title}. Skipping.")
+                                bad = True
+                        if not bad:
+                            # Parse the output and write it to the file
+                            TITLES.add(title)
+                            try:
+                                page = parse_text(page)
+                                output.write(page)
+                            except Exception as err:
+                                print(f"error parsing title {title}: {err}")
 
                     # Reset
-                    content = ""
+                    processed += 1
+                    if args.progress:
+                        sys.stdout.write("\033[K")
+                        sys.stdout.write(f"Processed articles: {processed}\tlast title: {title}\r")
+                    page = ""
                     title = None
                     article = False
 
+        sys.stdout.flush()
+        sys.stdout.write("\033[K")
         # Replace the old file with the deduped file
         if not args.keep:
             os.rename(tmp_file, args.input)
@@ -91,5 +126,22 @@ make sure you have enough space on the device to temporary duplicate the file.
         # Cleanup if necessary
         if os.path.exists(tmp_file) and not args.keep:
             os.remove(tmp_file)
+
+
+def parse_text(content):
+    """Use the wtf_wikipedia js library to parse the XML."""
+    page = ET.fromstring(content)
+    text = page.find("revision").find("text").text
+    proc = subprocess.Popen(
+        ["./parse_xml"], stdin=subprocess.PIPE, stdout=subprocess.PIPE
+    )
+    (processed, err) = proc.communicate(text.encode("utf-8"))
+    if err is not None:
+        raise Exception(err)
+
+    # Set the new value, return the data as a dumped XML string
+    page.find("revision").find("text").text = processed.decode("utf-8")
+    return ET.tostring(page).decode()
+
 
 main()

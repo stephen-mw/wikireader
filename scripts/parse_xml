@@ -1,0 +1,10 @@
+#!/usr/bin/env node
+
+const wtf = require('wtf_wikipedia')
+
+// The wikipedia articles are fed in via stdin
+var fs = require("fs");
+var stdinBuffer = fs.readFileSync(0);
+var text = wtf(stdinBuffer.toString()).text();
+
+console.log(text);

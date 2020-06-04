@@ -55,14 +55,14 @@ The below commands assume you've downloaded a wikipedia dump to the `build` dire
 # Get the latest docker image
 docker pull stephenmw/wikireader
 
-# Dedupe/clean the wikipedia file. Note that this creates a temporary file of roughly the same size until the process is finished. Make sure you have enough space.
-scripts/clean_xml build/enwiki-20191201-pages-articles.xml
+# Dedupe/clean the wikipedia file.
+scripts/clean_xml build/enwiki-20191201-pages-articles.xml --wikireader --links -o- > build/enwiki-20191201-pages-articles.xml_clean
 
 # Launch docker and share the build directory with `/build`. Make sure you run this from your `wikireader` directory.
 docker run --rm -v $(pwd)/build:/build -ti stephenmw/wikireader:latest bash
 
 # Symlink the file to create a filename expected by the processing application. The actual file name will vary depending on which dump of the wikimedia software you downloaded.
-ln -s /build/enwiki-20191201-pages-articles.xml enwiki-pages-articles.xml
+ln -s /build/enwiki-20191201-pages-articles.xml_clean enwiki-pages-articles.xml
 
 # Set the max concurrency and give this attempt a name. I use 8 for my system. Use whatever works for you. I recommend you use high parallel counts with the number of cores you have minus 1. Keep in mind there's skew in the processing and the first worker will take about 2x longer than the others.
 export MAX_CONCURRENCY=8 

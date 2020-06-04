@@ -46,6 +46,10 @@ RUN apt update && apt install -y \
     php5.6-xml
 RUN ln -s /usr/bin/php5.6 /usr/bin/php5
 
+# The clean_xml script needs python3.7 or higher
+RUN add-apt-repository ppa:deadsnakes/ppa
+RUN apt update && apt install -y python3.8
+
 # Removing the annoying gnu parallel prompt
 RUN mkdir /root/.parallel && touch /root/.parallel/will-cite
 
@@ -58,9 +62,6 @@ RUN cp /wikireader/SavedCaches/config.cache-binutils-12.10 /wikireader/host-tool
 # There will be a gcc error here
 RUN make || true
 RUN cp /wikireader/SavedCaches/config.cache-gcc-12.10 /wikireader/host-tools/gcc-3.3.2/build/config.cache
-
-# This library is used for parsing the wikimedia dump text
-RUN npm install -g wtf_wikipedia
 
 # Should be good to go
 RUN make

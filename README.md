@@ -52,6 +52,9 @@ After cleanup, you'll either need to place or symlink the wikipedia file into th
 # Commands for building
 The below commands assume you've downloaded a wikipedia dump to the `build` directory. I'm using the Dec 20 dump as an example.
 ```
+# Get the latest docker image
+docker pull stephenmw/wikireader
+
 # Dedupe/clean the wikipedia file. Note that this creates a temporary file of roughly the same size until the process is finished. Make sure you have enough space.
 scripts/clean_xml build/enwiki-20191201-pages-articles.xml
 

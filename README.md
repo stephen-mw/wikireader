@@ -104,9 +104,9 @@ make WORKDIR=/build/${RUNVER}/work DESTDIR=/build/${RUNVER}/image combine instal
 # Testing the image using the wiki-simulator
 After building, you might want to test the image using the simulator before loading it onto your SD card. You can use the `wiki-simulator` command to do this.
 
-On my mac I have [xquartz](https://www.xquartz.org/) installed. I connect to my build server with X Forwarding so that I don't have to install any of the software locally. You'll need to run an ssh daemon on your container if you want to do this within docker.
+On my mac I have [xquartz](https://www.xquartz.org/) installed. I connect to my build server with X Forwarding so that I don't have to install any of the software locally. 
 
-Of course, if you are running everything from within a linux host you can do it all locally.
+Unfortunately this process can't be done in a container build server. I haven't had time to figure out exactly what's necessary to fix it. In the meantime I keep the software installed on a linux server for this process.
 
 ```
 # Connect from my mac to the build server with X Forwarding

@@ -9,6 +9,7 @@ This repo (and docker container) contain the tools necessary to build an updated
 
 ## Known issues
 * There appears to be a corruption issue with some of the indexes, causing some many articles not to load. You will see the message `The article, 4ab978, failed to load. Please restart your WikiReader and try again.`
+* Infobox template is not yet supported by the wikiextractor, so that template is dropped.
 
 # Get the latest image
 Pull it down from dockerhub

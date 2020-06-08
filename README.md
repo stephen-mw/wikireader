@@ -8,9 +8,7 @@ This repo (and docker container) contain the tools necessary to build an updated
 * Script added to cleanup xml file.
 
 ## Known issues
-* The `{{#invoke ... }}` doesn't work and is rendered as text.
-* The `{{Infobox ... }}` plugin doesn't work and is rendered as text.
-* Currently the `cleanup_xml` script will dedupe titles, but there will still be broken links and bad articles. Currently the only way to fix this is to do the (long) rendering twice, after the first rendering you need to create an ignore file and then reparse and rerender from scratch.
+* There appears to be a corruption issue with some of the indexes, causing some many articles not to load. You will see the message `The article, 4ab978, failed to load. Please restart your WikiReader and try again.`
 
 # Get the latest image
 Pull it down from dockerhub
@@ -27,25 +25,29 @@ docker build -t wikireader .
 The build process currency takes 3 steps:
 
 1. Download the latest `enwiki-<date>-pages-articles.xml` file dump.
-2. Run the `clean_xml` script on the file and create a new deduped file.
+2. Run the `clean_xml` script on the file and create a new parsed XML file. This process will basically remove all formatting other than text and links, as well as dedupe the index.
 3. Do the rendering.
 4. After rendering is complete, look in the en-log file and find all of the titles which didn't render.
-5. Run the `clean_xml` script again with an ignore file with those titles.
 6. Run the entire process over again.
 
-You must do a parallized build in order to create `dat` files that are small enough for the wikireader. Parallelism is controlled via parameters of the `Run` script.
+You must do a parallized build in order to create `dat` files that are small enough for the wikireader. Parallelism is controlled via parameters of the `Run` script. See below for examples.
 
 By default the `Run` file runs all parallelized processes at once. This can often be too much for your system to handle memory wise. To control the max number of concurrent parsers and renders running at once, you can set the environment variable `MAX_CONCURRENT`, which prevents new parsers or renders from running until they can get a semaphor lock.
 
-On my machine, which is an 4 core 8 thread i7 with 32 GB of ram, I find that running `MAX_CONCURRENT` at 8 with parallelism to 16 is good enough. That will use about 16 GB of ram during the sort phase. Make sure you have enough ram or swap to get it through.
+On my machine, which is an 4 core 8 thread i7 with 32 GB of ram, I find that running `MAX_CONCURRENT` at 8 with parallelism to 64 works well. That will use about 16 GB of ram during the sort phase. Make sure you have enough ram or swap to get it through.
 
 ## Docker settings
-By default docker doesn't share a lot of resources. You'll want to max out the CPU and memory share to your container in your docker configuration.
+By default docker doesn't share a lot of resources if running on a mac or windows. You'll want to max out the CPU and memory share to your container in your docker configuration. On linux this is not an issue as far as I know.
 
 # Preparing a wikipedia dump file
-Wikipedia dump files can be downloaded directly from wikipedia. There's some preparation you'll need to do to the file before it will work. You'll need to dedupe the titles as well as cleanup some of the unnused template (```{{#invoke:....}}```).
+Wikipedia dump files can be downloaded directly from wikipedia. There's some preparation you'll need to do to the file before it will work.
 
-You can use the `scripts/clean_xml` script to complete that task. By default it will cleanup the XML file. Beware that this script temporarily create a new file the same size as the original, so make sure you have enough space.
+You can use the `scripts/clean_xml` script to prepare the dump. By default it will cleanup the XML file. This will create a new dump file that's approximately 16 GB as of June 8th, 2020. The `clean_xml` script requires python3.7 or above, which is installed on the container.
+
+```
+# Assuming you have the dump downloaded to the `build` directory
+../scripts/clean_xml enwiki-20200501-pages-articles.xml --wikireader --links -o- > enwiki-20200501-pages-articles.xml_clean
+```
 
 After cleanup, you'll either need to place or symlink the wikipedia file into the `wikireader` directory, since the `Run` script has rigid rules about the files. Since you probably don't want to upload the entire file to your docker context, this is best solved by sharing the `build` directory with your docker container and then symlinking into your wikireader directory (see the script parameters at the bottom to see how it's done).
 

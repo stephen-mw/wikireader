@@ -69,7 +69,7 @@ cd wikireader/
 # Launch docker and share the build directory with `/build`. Make sure you run this from your `wikireader` directory.
 docker run --rm -v $(pwd)/build:/build -ti stephenmw/wikireader:latest bash
 
-# Set the environment
+# Usually best to set this value to the number of CPU cores of the system.
 export MAX_CONCURRENCY=8 
 
 # The URI for the database dump you want to use

@@ -2,7 +2,7 @@
 This repo (and docker container) contain the tools necessary to build an updated wikireader image.
 
 ## Differences between this and the original wikireader repo
-* This repo includes a clean of the WikiExtractor.py updated specifically for the wikireader. This file is used to generate the text XML without formatting and makes processing MUCH faster (it also takes care of deduping the dump.
+* This repo includes an updated fork of the [WikiExtractor.py](https://github.com/attardi/wikiextractor) script built specifically for the wikireader. This file is used to dedupe and generate the plaintext XML and makes processing MUCH faster.
 * The docker container is pre-built with everything you need.
 * Concurrency can be set independently of the `Build` script (in fact, you shouldn't set parallelism in the `Build` script at all).
 
@@ -47,18 +47,24 @@ bzip -d https://dumps.wikimedia.org/enwiki/20200601/enwiki-20200601-pages-articl
 ```
 
 ### Download, decompress, clean (one-liner)
+Do it all in 1 go and save yourself 70GB of unnecessary disk space.
+
 ```
 # Download, decompress, and clean
 curl -L 'https://dumps.wikimedia.org/enwiki/20200601/enwiki-20200601-pages-articles.xml.bz2' -o- | bzcat | ../scripts/clean_xml - --wikireader --links --keep_tables -o- > enwiki-20200601-pages-articles.xml_clean
 ```
 
 # Commands for building
-Now that you've got a "clean" wikimedia dump, it's time to build. The entire build process takes place inside a docker container. You'll need to share your `build/` directory over to the container. Remember, if you're running on mac or windows make sure you share enough resources with the container to do the build (max CPU and max ram).
+The entire build process takes place inside a docker container. You'll need to share your `build/` directory over to the container. Remember, if you're running on mac or windows make sure you share enough resources with the container to do the build (max CPU and max ram).
+
+In these examples I do the `clean_xml` script in the docker container. There's no requirement that this is done from within the container, but the container does have the right tools for it (requires bzip2 and python3.7+).
 
 
 ```
 # Get the latest docker image
 docker pull stephenmw/wikireader
+
+cd wikireader/
 
 # Launch docker and share the build directory with `/build`. Make sure you run this from your `wikireader` directory.
 docker run --rm -v $(pwd)/build:/build -ti stephenmw/wikireader:latest bash
@@ -66,8 +72,10 @@ docker run --rm -v $(pwd)/build:/build -ti stephenmw/wikireader:latest bash
 # Set the environment
 export MAX_CONCURRENCY=8 
 
+# The URI for the database dump you want to use
+export URI="https://dumps.wikimedia.org/enwiki/20200601/enwiki-20200601-pages-articles.xml.bz2"
+
 # This will automatically set the RUNVER to the dateint of the dump
-export URI="https://dumps.wikimedia.org/enwiki/20200601/enwiki-${RUNVER}-pages-articles.xml.bz2"
 export RUNVER="$(echo $URI | perl -wnlE 'say /(\d{8})/')"
 
 # Download/clean the wikimedia dump
@@ -76,14 +84,11 @@ curl -L "${URI}" -o- | bzcat | ../scripts/clean_xml - --wikireader --links --kee
 # Symlink the file to create a filename expected by the processing application. The actual file name will vary depending on which dump of the wikimedia software you downloaded.
 ln -s /build/enwiki-${RUNVER}-pages-articles.xml_clean enwiki-pages-articles.xml
 
-# Start the processing and wait a really link time (4.5 days for me). The `parallel=16` creates 16 shards but doesn't actually run them all in parallel. See MAX_CONCURRENCY for adjusting that. This parallel number must be greater than 4 to create files small enough to fit onto a FAT32 SD card.
+# Start the processing!
 time scripts/Run --parallel=64 --machines=1 --farm=1 --work=/build/${RUNVER}/work --dest=/build/${RUNVER}/image --temp=/dev/shm ::::::: 2>&1 < /dev/null
 
 # Combine the files and create the image
 make WORKDIR=/build/${RUNVER}/work DESTDIR=/build/${RUNVER}/image combine install
-
-# Remove / cleanup the work directory
-rm -rfv /build/${RUNVER}/work
 ```
 
 After this process, you can shutdown your container. The new image will be found under `build/${RUNVER}/image`. You can copy this entire directory over to your SD card.

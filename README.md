@@ -1,4 +1,4 @@
-# Wikireader build utilies
+# Wikireader build utilities
 This repo (and docker container) contain the tools necessary to build an updated wikireader image.
 
 ## Differences between this and the original wikireader repo

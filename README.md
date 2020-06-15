@@ -2,14 +2,9 @@
 This repo (and docker container) contain the tools necessary to build an updated wikireader image.
 
 ## Differences between this and the original wikireader repo
-* All dependencies already installed and ready to go.
-* Maximum concurrency per host can be controlled via the `MAX_CONCURRENCY` var.
-* Can be built from any host that runs docker.
-* Script added to cleanup xml file.
-
-## Known issues
-* There appears to be a corruption issue with some of the indexes, causing some many articles not to load. You will see the message `The article, 4ab978, failed to load. Please restart your WikiReader and try again.`
-* Infobox template is not yet supported by the wikiextractor, so that template is dropped.
+* This repo includes a clean of the WikiExtractor.py updated specifically for the wikireader. This file is used to generate the text XML without formatting and makes processing MUCH faster (it also takes care of deduping the dump.
+* The docker container is pre-built with everything you need.
+* Concurrency can be set independently of the `Build` script (in fact, you shouldn't set parallelism in the `Build` script at all).
 
 # Get the latest image
 Pull it down from dockerhub
@@ -23,56 +18,66 @@ docker build -t wikireader .
 ```
 
 # Building a new wikireader image
-The build process currency takes 3 steps:
+The build process currency is 4 steps:
 
-1. Download the latest `enwiki-<date>-pages-articles.xml` file dump.
-2. Run the `clean_xml` script on the file and create a new parsed XML file. This process will basically remove all formatting other than text and links, as well as dedupe the index.
+1. Download/decompress/clean a wikimedia dump.
 3. Do the rendering.
-4. After rendering is complete, look in the en-log file and find all of the titles which didn't render.
-6. Run the entire process over again.
+4. Copy the contents to a FAT32 SD card and enjoy.
 
-You must do a parallized build in order to create `dat` files that are small enough for the wikireader. Parallelism is controlled via parameters of the `Run` script. See below for examples.
-
-By default the `Run` file runs all parallelized processes at once. This can often be too much for your system to handle memory wise. To control the max number of concurrent parsers and renders running at once, you can set the environment variable `MAX_CONCURRENT`, which prevents new parsers or renders from running until they can get a semaphor lock.
-
-On my machine, which is an 4 core 8 thread i7 with 32 GB of ram, I find that running `MAX_CONCURRENT` at 8 with parallelism to 64 works well. That will use about 16 GB of ram during the sort phase. Make sure you have enough ram or swap to get it through.
+Processing takes about 16 GB of ram, the largest section being the sorting of the index. I set MAX_CONCURRENCY to 8 which is the number of processors I have on my i7.
 
 ## Docker settings
 By default docker doesn't share a lot of resources if running on a mac or windows. You'll want to max out the CPU and memory share to your container in your docker configuration. On linux this is not an issue as far as I know.
 
 # Preparing a wikipedia dump file
-Wikipedia dump files can be downloaded directly from wikipedia. There's some preparation you'll need to do to the file before it will work.
+Wikipedia dump files can be downloaded [directly from wikipedia](https://dumps.wikimedia.org/backup-index.html). You'll need to download, decompress, and then clean the XML file (remove dupes, create a text dump). You can do this in separate steps but I highly suggest you use the one-liner. It's faster and will only create a 16 GB file, instead of a 70 GB file.
 
-You can use the `scripts/clean_xml` script to prepare the dump. By default it will cleanup the XML file. This will create a new dump file that's approximately 16 GB as of June 8th, 2020. The `clean_xml` script requires python3.7 or above, which is installed on the container.
+For the examples below, I'm assuming that you're in the `build/` directory of this repo.
 
+### Download, decompress, clean (long way)
 ```
-# Assuming you have the dump downloaded to the `build` directory
-../scripts/clean_xml enwiki-20200501-pages-articles.xml --wikireader --links -o- > enwiki-20200501-pages-articles.xml_clean
+# This is the link to the June 2020 dump. Change as needed
+wget https://dumps.wikimedia.org/enwiki/20200601/enwiki-20200601-pages-articles.xml.bz2
+
+# Decompress
+bzip -d https://dumps.wikimedia.org/enwiki/20200601/enwiki-20200601-pages-articles.xml.bz2
+
+# Clean
+../scripts/clean_xml enwiki-20200601-pages-articles.xml --wikireader --links --keep_tables -o- > enwiki-20200601-pages-articles.xml_clean
 ```
 
-After cleanup, you'll either need to place or symlink the wikipedia file into the `wikireader` directory, since the `Run` script has rigid rules about the files. Since you probably don't want to upload the entire file to your docker context, this is best solved by sharing the `build` directory with your docker container and then symlinking into your wikireader directory (see the script parameters at the bottom to see how it's done).
+### Download, decompress, clean (one-liner)
+```
+# Download, decompress, and clean
+curl -L 'https://dumps.wikimedia.org/enwiki/20200601/enwiki-20200601-pages-articles.xml.bz2' -o- | bzcat | ../scripts/clean_xml - --wikireader --links --keep_tables -o- > enwiki-20200601-pages-articles.xml_clean
+```
 
 # Commands for building
-The below commands assume you've downloaded a wikipedia dump to the `build` directory. I'm using the Dec 20 dump as an example.
+Now that you've got a "clean" wikimedia dump, it's time to build. The entire build process takes place inside a docker container. You'll need to share your `build/` directory over to the container. Remember, if you're running on mac or windows make sure you share enough resources with the container to do the build (max CPU and max ram).
+
+
 ```
 # Get the latest docker image
 docker pull stephenmw/wikireader
 
-# Dedupe/clean the wikipedia file.
-scripts/clean_xml build/enwiki-20191201-pages-articles.xml --wikireader --links -o- > build/enwiki-20191201-pages-articles.xml_clean
-
 # Launch docker and share the build directory with `/build`. Make sure you run this from your `wikireader` directory.
 docker run --rm -v $(pwd)/build:/build -ti stephenmw/wikireader:latest bash
 
-# Symlink the file to create a filename expected by the processing application. The actual file name will vary depending on which dump of the wikimedia software you downloaded.
-ln -s /build/enwiki-20191201-pages-articles.xml_clean enwiki-pages-articles.xml
-
-# Set the max concurrency and give this attempt a name. I use 8 for my system. Use whatever works for you. I recommend you use high parallel counts with the number of cores you have minus 1. Keep in mind there's skew in the processing and the first worker will take about 2x longer than the others.
+# Set the environment
 export MAX_CONCURRENCY=8 
-export RUNVER="test"
+
+# This will automatically set the RUNVER to the dateint of the dump
+export URI="https://dumps.wikimedia.org/enwiki/20200601/enwiki-${RUNVER}-pages-articles.xml.bz2"
+export RUNVER="$(echo $URI | perl -wnlE 'say /(\d{8})/')"
+
+# Download/clean the wikimedia dump
+curl -L "${URI}" -o- | bzcat | ../scripts/clean_xml - --wikireader --links --keep_tables -o- > /build/enwiki-${RUNVER}-pages-articles.xml_clean
+
+# Symlink the file to create a filename expected by the processing application. The actual file name will vary depending on which dump of the wikimedia software you downloaded.
+ln -s /build/enwiki-${RUNVER}-pages-articles.xml_clean enwiki-pages-articles.xml
 
 # Start the processing and wait a really link time (4.5 days for me). The `parallel=16` creates 16 shards but doesn't actually run them all in parallel. See MAX_CONCURRENCY for adjusting that. This parallel number must be greater than 4 to create files small enough to fit onto a FAT32 SD card.
-time scripts/Run --parallel=64 --machines=1 --farm=1 --work=/build/${RUNVER}/work --dest=/build/${RUNVER}/image --temp=/dev/shm --clear ::::::: 2>&1 < /dev/null
+time scripts/Run --parallel=64 --machines=1 --farm=1 --work=/build/${RUNVER}/work --dest=/build/${RUNVER}/image --temp=/dev/shm ::::::: 2>&1 < /dev/null
 
 # Combine the files and create the image
 make WORKDIR=/build/${RUNVER}/work DESTDIR=/build/${RUNVER}/image combine install
@@ -89,13 +94,13 @@ The `Run` script also allows you to build on multiple computers. The caveat is t
 After the build completes, you copy the `.dat` files to one of the computers (either one) in order to finish the last combine step.
 
 ```
-# Note the -8 in the command field. This will ensure that of the 16 shards, 8 are built per host (8 * 2 computers = 16 shards).
+# Note the -32 in the command field. This will ensure that of the 64 shards, 32 are built per host (32 * 2 computers = 64 shards).
 
 # On host 1
-time scripts/Run --parallel=8 --machines=2 --farm=1 --work=/build/${RUNVER}/work --dest=/build/${RUNVER}/image --temp=/dev/shm --clear ::::::-8: 2>&1 < /dev/null
+time scripts/Run --parallel=64 --machines=2 --farm=1 --work=/build/${RUNVER}/work --dest=/build/${RUNVER}/image --temp=/dev/shm ::::::-32: 2>&1 < /dev/null
 
 # On host 2
-time scripts/Run --parallel=8 --machines=1 --farm=2 --work=/build/${RUNVER}/work --dest=/build/${RUNVER}/image --temp=/dev/shm --clear ::::::-8: 2>&1 < /dev/null
+time scripts/Run --parallel=64 --machines=1 --farm=2 --work=/build/${RUNVER}/work --dest=/build/${RUNVER}/image --temp=/dev/shm ::::::-32: 2>&1 < /dev/null
 
 # Copy the files from host2 to host1
 scp /build/${RUNVER}/image/* host1:/build/${RUNVER}/image/

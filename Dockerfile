@@ -2,7 +2,7 @@ FROM ubuntu:bionic
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-WORKDIR /wikireader
+WORKDIR /build
 
 RUN apt update -y
 RUN apt update && apt install -y \

@@ -1348,7 +1348,11 @@ def write_article(language_links):
 
     for i in g_links:
         (x0, y0, x1, y1, url) = g_links[i]
-        links_stream.write(struct.pack('<3I', (y0 << 8) | x0, (y1 << 8) | x1, link_number(url)))
+        try:
+            links_stream.write(struct.pack('<3I', (y0 << 8) | x0, (y1 << 8) | x1, link_number(url)))
+        except Exception:
+            PrintLog.message(u'Failure writing article "%s" -- skipping.' % g_this_article_title)
+            links_stream.write("[Article failed to render]".encode('utf-8') + '\0')
 
     links_stream.flush()
     links = links_stream.getvalue()

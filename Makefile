@@ -178,6 +178,11 @@ ALL_TARGETS =
 .PHONY: all
 all:    all-targets
 
+# For building the wikimedia docker images
+build:
+	docker build --rm --compress --no-cache -t stephenmw/wikireader:latest .
+release: build
+	docker push stephenmw/wikireader:latest
 
 # wiki naming
 # ===========

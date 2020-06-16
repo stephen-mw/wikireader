@@ -85,8 +85,6 @@ from types import SimpleNamespace
 text_type = str
 
 
-LOCK = Lock()
-
 # XML_TEMPLATE is used to write wikimedia xml-like output for the wikireader
 XML_TEMPLATE = Template('''
 <page>

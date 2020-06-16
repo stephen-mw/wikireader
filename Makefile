@@ -175,7 +175,7 @@ endef
 
 ALL_TARGETS =
 
-.PHONY: all
+.PHONY: all build release
 all:    all-targets
 
 # For building the wikimedia docker images

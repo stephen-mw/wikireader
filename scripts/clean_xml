@@ -68,7 +68,7 @@ import re  # TODO use regex when it will be standard
 import time
 import json
 from io import StringIO
-from multiprocessing import Queue, Process, Value, cpu_count
+from multiprocessing import Queue, Process, Value, cpu_count, Lock
 from timeit import default_timer
 
 # For wikireader output
@@ -84,6 +84,8 @@ from itertools import zip_longest
 from types import SimpleNamespace
 text_type = str
 
+
+LOCK = Lock()
 
 # XML_TEMPLATE is used to write wikimedia xml-like output for the wikireader
 XML_TEMPLATE = Template('''
@@ -207,10 +209,6 @@ options = SimpleNamespace(
 ##
 # Keys for Template and Module namespaces
 templateKeys = set(['10', '828'])
-
-##
-# used to filter duplicate titles
-seen_titles = set()
 
 ##
 # Regex for identifying disambig pages
@@ -3046,31 +3044,18 @@ def extract_process(opts, i, jobs_queue, output_queue):
     while True:
         job = jobs_queue.get()  # job is (id, title, page, page_num)
         if job:
+            duplicate = False
             text = ''
             id, revid, title, page, page_num = job
-            # Titles that have 1 character and are non-ascii are skipped
-            if len(title) <= 1 and not title[0].isascii():
-                logging.warning("Skipping non-ascii title: %s", title)
-                output_queue.put((page_num, text))
-                out.truncate(0)
-                out.seek(0)
-                continue
-            if title in seen_titles:
-                logging.warning("Skipping duplicate title: %s", title)
-                output_queue.put((page_num, text))
-                out.truncate(0)
-                out.seek(0)
-                continue
             try:
                 e = Extractor(*job[:4]) # (id, revid, title, page)
                 page = None              # free memory
                 e.extract(out)
                 text = out.getvalue()
+                output_queue.put((title, page_num, text))
             except Exception as err:
                 logging.exception('Processing page: %s %s: %s', id, title, err)
 
-            seen_titles.add(title)
-            output_queue.put((page_num, text))
             out.truncate(0)
             out.seek(0)
         else:
@@ -3095,6 +3080,8 @@ def reduce_process(opts, output_queue, spool_length,
     options = opts
 
     createLogger(options.quiet, options.debug, options.log_file)
+
+    seen_titles = set()
 
     if out_file:
         nextFile = NextFile(out_file)
@@ -3125,7 +3112,11 @@ def reduce_process(opts, output_queue, spool_length,
             pair = output_queue.get()
             if not pair:
                 break
-            page_num, text = pair
+            title, page_num, text = pair
+            if title in seen_titles:
+                logging.warning("Skipping duplicate title: %s", title)
+                continue
+            seen_titles.add(title)
             spool[page_num] = text
             # tell mapper our load:
             spool_length.value = len(spool)

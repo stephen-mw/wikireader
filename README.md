@@ -30,9 +30,19 @@ Processing takes about 16 GB of ram, the largest section being the sorting of th
 By default docker doesn't share a lot of resources if running on a mac or windows. You'll want to max out the CPU and memory share to your container in your docker configuration. On linux this is not an issue as far as I know.
 
 # Preparing a wikipedia dump file
-Wikipedia dump files can be downloaded [directly from wikipedia](https://dumps.wikimedia.org/backup-index.html). You'll need to download, decompress, and then clean the XML file (remove dupes, create a text dump). You can do this in separate steps but I highly suggest you use the one-liner. It's faster and will only create a 16 GB file, instead of a 70 GB file.
+This repo included a forked version of the [WikiExtractor.py](https://github.com/attardi/wikiextractor) file which is renamed to `clean_xml`. Before processing the XML dump, you'll need to run the `clean_xml` script on it to tidy things up. In my fork, I've made some improvements that are specific to the wikireader.
 
-For the examples below, I'm assuming that you're in the `build/` directory of this repo.
+If you were to create a wikireader image without running `clean_xml` on it, it would be full of all kinds of `{{ foo }}` internal unrendered template strings.
+
+Using the `clean_xml` file also has the bonus of making the parsing phase of the wikireader process go by much faster. Days faster! And it reduces the final dump size from around 70 GB to 16 GB (20200601 data). Check below for the 1-liner for downloading, decompressing, and cleaning the dump all in 1 go. It will save you from storing 70 GB.
+
+The `clean_xml` script does 3 important things:
+
+* The pages are rendered to text, and links are preserved in a wikireader-specific format.
+* Deduplication of titles.
+* The output template is an XML format understood by the wikireader rendering process.
+
+On my machine, it takes about 74 minutes to clean the 20200601 database dump. It reduces the uncompressed file size from 70 GB to around 16 GB.
 
 ### Download, decompress, clean (long way)
 ```
@@ -59,12 +69,12 @@ The entire build process takes place inside a docker container. You'll need to s
 
 In these examples I do the `clean_xml` script in the docker container. There's no requirement that this is done from within the container, but the container does have the right tools for it (requires bzip2 and python3.7+).
 
-
 ```
 # Get the latest docker image
 docker pull stephenmw/wikireader
 
-cd wikireader/
+# This is where the wikimedia dump and rendered output will be
+mkdir build
 
 # Launch docker and share the build directory with `/build`. Make sure you run this from your `wikireader` directory.
 docker run --rm -v $(pwd)/build:/build -ti stephenmw/wikireader:latest bash

@@ -3038,17 +3038,17 @@ def extract_process(opts, i, jobs_queue, output_queue):
     while True:
         job = jobs_queue.get()  # job is (id, title, page, page_num)
         if job:
-            duplicate = False
             id, revid, title, page, page_num = job
             try:
                 e = Extractor(*job[:4]) # (id, revid, title, page)
                 page = None              # free memory
                 e.extract(out)
                 text = out.getvalue()
-                output_queue.put((title, page_num, text))
-            except Exception as err:
-                logging.exception('Processing page: %s %s: %s', id, title, err)
+            except:
+                text = ''
+                logging.exception('Processing page: %s %s', id, title)
 
+            output_queue.put((title, page_num, text))
             out.truncate(0)
             out.seek(0)
         else:
@@ -3080,7 +3080,7 @@ def reduce_process(opts, output_queue, spool_length,
         nextFile = NextFile(out_file)
         output = OutputSplitter(nextFile, file_size, file_compress)
     else:
-        output = sys.stdout.buffer
+        output = sys.stdout if PY2 else sys.stdout.buffer
         if file_compress:
             logging.warn("writing to stdout, so no output compression (use an external tool)")
 
@@ -3317,4 +3317,3 @@ def createLogger(quiet, debug, log_file):
 
 if __name__ == '__main__':
     main()
-

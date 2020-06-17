@@ -68,15 +68,11 @@ import re  # TODO use regex when it will be standard
 import time
 import json
 from io import StringIO
-from multiprocessing import Queue, Process, Value, cpu_count, Lock
+from multiprocessing import Queue, Process, Value, cpu_count
 from timeit import default_timer
 
 # For wikireader output
 from jinja2 import Template
-
-if sys.version_info.major < 3 or sys.version_info.minor < 7:
-    print("This script is only compatible with python 3.7 and above.")
-    exit()
 
 from urllib.parse import quote
 from html.entities import name2codepoint
@@ -3043,7 +3039,6 @@ def extract_process(opts, i, jobs_queue, output_queue):
         job = jobs_queue.get()  # job is (id, title, page, page_num)
         if job:
             duplicate = False
-            text = ''
             id, revid, title, page, page_num = job
             try:
                 e = Extractor(*job[:4]) # (id, revid, title, page)

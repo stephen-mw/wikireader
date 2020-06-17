@@ -175,7 +175,7 @@ endef
 
 ALL_TARGETS =
 
-.PHONY: all build release
+.PHONY: all build release build_core release_core
 all:    all-targets
 
 # For building the wikimedia docker images
@@ -183,6 +183,10 @@ build:
 	docker build --rm --compress --no-cache -t stephenmw/wikireader:latest .
 release: build
 	docker push stephenmw/wikireader:latest
+build_core:
+	docker build --rm --compress --no-cache -t stephenmw/wikireader_core:latest .
+release_Core: build_core
+	docker push stephenmw/wikireader_core:latest
 
 # wiki naming
 # ===========

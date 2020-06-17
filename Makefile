@@ -184,8 +184,8 @@ build:
 release: build
 	docker push stephenmw/wikireader:latest
 build_core:
-	docker build --rm --compress --no-cache -t stephenmw/wikireader_core:latest .
-release_Core: build_core
+	cd core && docker build --rm --compress --no-cache -t stephenmw/wikireader_core:latest .
+release_core: build_core
 	docker push stephenmw/wikireader_core:latest
 
 # wiki naming

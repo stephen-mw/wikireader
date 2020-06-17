@@ -74,11 +74,31 @@ from timeit import default_timer
 # For wikireader output
 from jinja2 import Template
 
-from urllib.parse import quote
-from html.entities import name2codepoint
-from itertools import zip_longest
-from types import SimpleNamespace
-text_type = str
+PY2 = sys.version_info[0] == 2
+# Python 2.7 compatibiity
+if PY2:
+    from urllib import quote
+    from htmlentitydefs import name2codepoint
+    from itertools import izip as zip, izip_longest as zip_longest
+    range = xrange  # Use Python 3 equivalent
+    chr = unichr    # Use Python 3 equivalent
+    text_type = unicode
+
+    class SimpleNamespace(object):
+        def __init__ (self, **kwargs):
+            self.__dict__.update(kwargs)
+        def __repr__ (self):
+            keys = sorted(self.__dict__)
+            items = ("{}={!r}".format(k, self.__dict__[k]) for k in keys)
+            return "{}({})".format(type(self).__name__, ", ".join(items))
+        def __eq__ (self, other):
+            return self.__dict__ == other.__dict__
+else:
+    from urllib.parse import quote
+    from html.entities import name2codepoint
+    from itertools import zip_longest
+    from types import SimpleNamespace
+    text_type = str
 
 
 # XML_TEMPLATE is used to write wikimedia xml-like output for the wikireader

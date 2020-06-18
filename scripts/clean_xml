@@ -68,11 +68,15 @@ import re  # TODO use regex when it will be standard
 import time
 import json
 from io import StringIO
-from multiprocessing import Queue, Process, Value, cpu_count
+from multiprocessing import Queue, Process, Value, cpu_count, Lock
 from timeit import default_timer
 
 # For wikireader output
 from jinja2 import Template
+
+# Used for filter out duplicate titles
+SEEN_TITLES = set()
+LOCK = Lock()
 
 PY2 = sys.version_info[0] == 2
 # Python 2.7 compatibiity
@@ -233,9 +237,14 @@ g_page_total = 0
 g_page_articl_total=0
 g_page_articl_used_total=0
 # page filtering logic -- remove templates, undesired xml namespaces, and disambiguation pages
-def keepPage(ns, catSet, page):
+def keepPage(ns, catSet, page, title):
     global g_page_articl_total,g_page_total,g_page_articl_used_total
     g_page_total += 1
+    with LOCK:
+        if title in SEEN_TITLES:
+            logging.warning("Skipping duplicate title: %s" % title)
+            return False
+        SEEN_TITLES.add(title)
     if ns != '0':               # Aritcle
         return False
     # remove disambig pages if desired
@@ -3000,7 +3009,7 @@ def process_dump(input_file, template_file, out_file, file_size, file_compress,
     page_num = 0
     for page_data in pages_from(input):
         id, revid, title, ns, catSet, page = page_data
-        if keepPage(ns, catSet, page):
+        if keepPage(ns, catSet, page, title):
             # slow down
             delay = 0
             if spool_length.value > max_spool_length:
@@ -3068,7 +3077,7 @@ def extract_process(opts, i, jobs_queue, output_queue):
                 text = ''
                 logging.exception('Processing page: %s %s', id, title)
 
-            output_queue.put((title, page_num, text))
+            output_queue.put((page_num, text))
             out.truncate(0)
             out.seek(0)
         else:
@@ -3094,7 +3103,6 @@ def reduce_process(opts, output_queue, spool_length,
 
     createLogger(options.quiet, options.debug, options.log_file)
 
-    seen_titles = set()
 
     if out_file:
         nextFile = NextFile(out_file)
@@ -3102,7 +3110,7 @@ def reduce_process(opts, output_queue, spool_length,
     else:
         output = sys.stdout if PY2 else sys.stdout.buffer
         if file_compress:
-            logging.warn("writing to stdout, so no output compression (use an external tool)")
+            logging.warning("writing to stdout, so no output compression (use an external tool)")
 
     interval_start = default_timer()
     # FIXME: use a heap
@@ -3125,19 +3133,18 @@ def reduce_process(opts, output_queue, spool_length,
             pair = output_queue.get()
             if not pair:
                 break
-            title, page_num, text = pair
-            if title in seen_titles:
-                logging.warning("Skipping duplicate title: %s", title)
-                continue
-            seen_titles.add(title)
+            page_num, text = pair
             spool[page_num] = text
             # tell mapper our load:
             spool_length.value = len(spool)
+
             # FIXME: if an extractor dies, process stalls; the other processes
             # continue to produce pairs, filling up memory.
             if len(spool) > 200:
-                logging.debug('Collected %d, waiting: %d, %d', len(spool),
-                              next_page, next_page == page_num)
+                logging.info(
+                    'Collected %d, waiting: %d, %d', len(spool),
+                    next_page, next_page == page_num)
+
     if output != sys.stdout:
         output.close()
 

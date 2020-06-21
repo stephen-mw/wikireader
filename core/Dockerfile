@@ -61,3 +61,7 @@ RUN cp /wikireader/SavedCaches/config.cache-gcc-12.10 /wikireader/host-tools/gcc
 
 # Should be good to go
 RUN make
+
+# Make a simple combination, which will download additional tools
+RUN make DESTDIR=/tmp/image WORKDIR=/tmp/work XML_FILES="XML-Licenses/en/license.xml XML-Licenses/en/terms.xml xml-file-samples/text-example.xml" cleandirs createdirs iprc
+RUN make DESTDIR=/tmp/image WORKDIR=/tmp/work combine install && rm -rf /tmp/{image,work}

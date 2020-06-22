@@ -89,7 +89,7 @@ export URI="https://dumps.wikimedia.org/enwiki/20200601/enwiki-20200601-pages-ar
 export RUNVER="$(echo $URI | perl -wnlE 'say /(\d{8})/')"
 
 # Download/clean the wikimedia dump
-curl -L "${URI}" -o- | bzcat | ../scripts/clean_xml - --wikireader --links --keep_tables -o- > /build/enwiki-${RUNVER}-pages-articles.xml_clean
+time curl -L "${URI}" -o- | bzcat | python3.8 scripts/clean_xml - --wikireader --links --lists -o- > /build/enwiki-${RUNVER}-pages-articles.xml_clean
 
 # Symlink the file to create a filename expected by the processing application. The actual file name will vary depending on which dump of the wikimedia software you downloaded.
 ln -s /build/enwiki-${RUNVER}-pages-articles.xml_clean enwiki-pages-articles.xml

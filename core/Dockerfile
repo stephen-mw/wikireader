@@ -7,6 +7,7 @@ WORKDIR /wikireader
 RUN apt update -y
 RUN apt update && apt install -y \
     bison                        \
+    curl                         \
     dvipng                       \
     flex                         \
     g++                          \
@@ -28,6 +29,7 @@ RUN apt update && apt install -y \
     python-lzma                  \
     python-mecab                 \
     python-serial                \
+    python3-jinja2               \
     qt4-qmake                    \
     sqlite3                      \
     vim                          \
@@ -45,6 +47,10 @@ RUN apt update && apt install -y \
     php5.6-tidy                  \
     php5.6-xml
 RUN ln -s /usr/bin/php5.6 /usr/bin/php5
+
+# Install python3.8 for cleaning up the XML
+RUN add-apt-repository ppa:deadsnakes/ppa
+RUN apt install -y python3.8
 
 # Removing the annoying gnu parallel prompt
 RUN mkdir /root/.parallel && touch /root/.parallel/will-cite

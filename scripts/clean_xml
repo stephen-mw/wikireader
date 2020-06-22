@@ -2661,7 +2661,7 @@ def compact(text):
                     headers.clear()
                     # use item count for #-lines
                     listCount[i - 1] += 1
-                    bullet = 'BULLET::::%d. ' % listCount[i - 1] if n == '#' else 'BULLET::::- '
+                    bullet = '* %d. ' % listCount[i - 1] if n == '#' else '* '
                     page.append('{0:{1}s}'.format(bullet, len(listLevel)) + line)
                 elif options.toHTML:
                     if n not in listItem:

@@ -72,6 +72,5 @@ RUN make
 RUN make DESTDIR=/tools/image WORKDIR=/tools/work XML_FILES="XML-Licenses/en/license.xml XML-Licenses/en/terms.xml xml-file-samples/text-example.xml" cleandirs createdirs iprc
 RUN make DESTDIR=/tools/image WORKDIR=/tools/work combine install
 
-# Backup the host-tool compilation(s)
-RUN mkdir /host-tools/ && cp -r /wikireader/host-tools/toolchain-install /host-tools/
-ENV PATH="/host-tools/toolchain-install/bin:${PATH}"
+# Make the compiled tools available on the path
+ENV PATH="/wikireader/host-tools/toolchain-install/bin:${PATH}"

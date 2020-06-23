@@ -1,6 +1,6 @@
 FROM ubuntu:bionic
 
-ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND="noninteractive"
 
 WORKDIR /wikireader
 
@@ -73,4 +73,5 @@ RUN make DESTDIR=/tools/image WORKDIR=/tools/work XML_FILES="XML-Licenses/en/lic
 RUN make DESTDIR=/tools/image WORKDIR=/tools/work combine install
 
 # Backup the host-tool compilation(s)
-RUN cp -r /wikireader/host-tools/toolchain-install /host-tools/toolchain-install
+RUN mkdir /host-tools/ && cp -r /wikireader/host-tools/toolchain-install /host-tools/
+ENV PATH="/host-tools/toolchain-install/bin:${PATH}"

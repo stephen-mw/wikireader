@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+# Script to automatically build wikireader images
+set -euo pipefail
+
+
+export RUNVER="$1"
+if [[ ! ${RUNVER} =~ ^[0-9]{8}$ ]]; then
+    echo "First argument must be a dateint, such as 20200601"
+    exit 1
+fi
+
+# Set concurrency to system processors
+export MAX_CONCURRENCY=$(grep -c process /proc/cpuinfo)
+export XML="enwiki-${RUNVER}-pages-articles.xml"
+
+export URI="https://dumps.wikimedia.org/enwiki/${RUNVER}/enwiki-${RUNVER}-pages-articles1.xml.bz2"
+
+cd /build
+echo "Download new wikimedia dump at: ${URI}"
+curl -L "${URI}" -o- | bzcat | python3.8 /wikireader/scripts/clean_xml - --wikireader --links --lists -o- > ${XML}
+
+cd /wikireader
+ln -sf /build/${XML} enwiki-pages-articles.xml
+
+echo "Starting processing of ${XML}"
+time scripts/Run --parallel=64 --machines=1 --farm=1 --work=/build/${RUNVER}/work --dest=/build/${RUNVER}/image --temp=/dev/shm en:::NO:255::: 2>&1 < /dev/null
+
+echo "Creating image."
+make WORKDIR=/build/${RUNVER}/work DESTDIR=/build/${RUNVER}/image combine install
+
+echo "New image available at /build/${RUNVER}/image

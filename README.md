@@ -17,19 +17,43 @@ Or you can build it yourself after checking out the repo.
 docker build -t wikireader .
 ```
 
-# Building a new wikireader image
-The build process currency is 4 steps:
+to build the core system (the wikireader binaries), you can build from within the `core` directory:
+```
+cd core
+docker build -t wikireader_core .
+```
 
-1. Download/decompress/clean a wikimedia dump.
-3. Do the rendering.
+# Auto-building a new wikireader image
+So easy! Use the `autowiki` script, which can be launched directly from docker. This script will do the following automatically for you:
+
+1. Download a wikireader dump
+2. Clean/process the XML for the dump while downloading, which will produce a dump file of approximately 16 GB
+3. Process the entire wikireader image
+
+You can run it like follows after cloning this repo. Make sure you share the build directory like in the command:
+```
+docker run --rm -v $(pwd)/build:/build -ti docker.io/stephenmw/wikireader:latest autogen 20200601
+```
+
+That's it! Now you can find your image under `build/20200601/image`. Just copy these files over to your wikireader
+
+
+## Building manually
+The build process involves 4 steps.
+
+1. Download and decompress a wikimedia dump index.
+2. Clean/parse the XML using the `clean_xml` script.
+    * This script effectively creates a text version of the dump, which is much faster at processing.
+3. Complete the parsing, rendering, and combining.
 4. Copy the contents to a FAT32 SD card and enjoy.
 
-Processing takes about 16 GB of ram, the largest section being the sorting of the index. I set MAX_CONCURRENCY to 8 which is the number of processors I have on my i7.
+## Resource requirements
+Processing takes about 16 GB of ram, the largest section being the sorting of the index. I set MAX_CONCURRENCY to 8 which is the number of processors I have on my i7. The `autowiki` script defaults `MAX_CONCURRENCY` to the number of CPUs on the host.
 
-## Docker settings
+### Docker settings
 By default docker doesn't share a lot of resources if running on a mac or windows. You'll want to max out the CPU and memory share to your container in your docker configuration. On linux this is not an issue as far as I know.
 
-# Preparing a wikipedia dump file
+## Preparing a wikipedia dump file
 This repo included a forked version of the [WikiExtractor.py](https://github.com/attardi/wikiextractor) file which is renamed to `clean_xml`. Before processing the XML dump, you'll need to run the `clean_xml` script on it to tidy things up. In my fork, I've made some improvements that are specific to the wikireader.
 
 If you were to create a wikireader image without running `clean_xml` on it, it would be full of all kinds of `{{ foo }}` internal unrendered template strings.
@@ -39,10 +63,12 @@ Using the `clean_xml` file also has the bonus of making the parsing phase of the
 The `clean_xml` script does 3 important things:
 
 * The pages are rendered to text, and links are preserved in a wikireader-specific format.
-* Deduplication of titles.
+* Links are translated to the wikireader format
+* Bullets are translated to the wikireader format
+* Titles are deduped.
 * The output template is an XML format understood by the wikireader rendering process.
 
-On my machine, it takes about 74 minutes to clean the 20200601 database dump. It reduces the uncompressed file size from 70 GB to around 16 GB.
+On my machine, it takes approximately 90 minutes to download, decompress, and clean the XML file, which reduces the filesize from 70GB to around 16GB.
 
 ### Download, decompress, clean (long way)
 ```
@@ -64,7 +90,7 @@ Do it all in 1 go and save yourself 70GB of unnecessary disk space.
 curl -L 'https://dumps.wikimedia.org/enwiki/20200601/enwiki-20200601-pages-articles.xml.bz2' -o- | bzcat | ../scripts/clean_xml - --wikireader --links --keep_tables -o- > enwiki-20200601-pages-articles.xml_clean
 ```
 
-# Commands for building
+## Commands for building
 The entire build process takes place inside a docker container. You'll need to share your `build/` directory over to the container. Remember, if you're running on mac or windows make sure you share enough resources with the container to do the build (max CPU and max ram).
 
 In these examples I do the `clean_xml` script in the docker container. There's no requirement that this is done from within the container, but the container does have the right tools for it (requires bzip2 and python3.7+).
@@ -95,7 +121,7 @@ time curl -L "${URI}" -o- | bzcat | python3.8 scripts/clean_xml - --wikireader -
 ln -s /build/enwiki-${RUNVER}-pages-articles.xml_clean enwiki-pages-articles.xml
 
 # Start the processing!
-time scripts/Run --parallel=64 --machines=1 --farm=1 --work=/build/${RUNVER}/work --dest=/build/${RUNVER}/image --temp=/dev/shm ::::::: 2>&1 < /dev/null
+time scripts/Run --parallel=64 --machines=1 --farm=1 --work=/build/${RUNVER}/work --dest=/build/${RUNVER}/image --temp=/dev/shm en:::NO:255::: 2>&1 < /dev/null
 
 # Combine the files and create the image
 make WORKDIR=/build/${RUNVER}/work DESTDIR=/build/${RUNVER}/image combine install

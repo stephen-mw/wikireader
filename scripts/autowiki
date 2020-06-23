@@ -14,19 +14,34 @@ fi
 export MAX_CONCURRENCY=$(grep -c process /proc/cpuinfo)
 export XML="enwiki-${RUNVER}-pages-articles.xml"
 
-export URI="https://dumps.wikimedia.org/enwiki/${RUNVER}/enwiki-${RUNVER}-pages-articles1.xml.bz2"
+function download_wiki(){
+    # Download the wikimedia dump file and process the XML
+    export URI="https://dumps.wikimedia.org/enwiki/${RUNVER}/enwiki-${RUNVER}-pages-articles.xml.bz2"
 
-cd /build
-echo "Download new wikimedia dump at: ${URI}"
-curl -L "${URI}" -o- | bzcat | python3.8 /wikireader/scripts/clean_xml - --wikireader --links --lists -o- > ${XML}
+    if [[ ! -d /build ]]; then
+        echo "No directory at /build. Did you forget to run with -v \$(pwd)/build:/build?"
+        exit 1
+    fi
 
-cd /wikireader
-ln -sf /build/${XML} enwiki-pages-articles.xml
+    cd /build
+    echo "Download new wikimedia dump at: ${URI}"
+    curl -L "${URI}" -o- | bzcat | python3.8 /wikireader/scripts/clean_xml - --wikireader --links --lists -o- > ${XML}
+}
 
-echo "Starting processing of ${XML}"
-time scripts/Run --parallel=64 --machines=1 --farm=1 --work=/build/${RUNVER}/work --dest=/build/${RUNVER}/image --temp=/dev/shm en:::NO:255::: 2>&1 < /dev/null
+function process(){
+    # Do the wikireader processing
+    cd /wikireader
+    ln -sf /build/${XML} enwiki-pages-articles.xml
 
-echo "Creating image."
-make WORKDIR=/build/${RUNVER}/work DESTDIR=/build/${RUNVER}/image combine install
+    echo "Starting processing of ${XML}"
+    time scripts/Run --parallel=64 --machines=1 --farm=1 --work=/build/${RUNVER}/work --dest=/build/${RUNVER}/image --temp=/dev/shm en:::NO:255::: 2>&1 < /dev/null
 
-echo "New image available at /build/${RUNVER}/image
+    echo "Creating image."
+    make WORKDIR=/build/${RUNVER}/work DESTDIR=/build/${RUNVER}/image combine install
+
+    echo "New image available at /build/${RUNVER}/image"
+}
+
+# Execution order
+download_wiki
+process

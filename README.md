@@ -30,6 +30,12 @@ In order to build a new wikireader image, you'll need:
 2. [git](https://git-scm.com/downloads)
 3. Very basic knowledge of the command line
 
+## Resource requirements
+Processing takes about 16 GB of ram, the largest section being the sorting of the index. I set MAX_CONCURRENCY to 8 which is the number of processors I have on my i7. The `autowiki` script defaults `MAX_CONCURRENCY` to the number of CPUs on the host.
+
+### Docker settings
+By default docker doesn't share a lot of resources if running on a mac or windows. You'll want to max out the CPU and memory share to your container in your docker configuration. On linux this is not an issue as far as I know.
+
 ## Building
 Once you have those tools, you can simply clone this repo and run the `autowiki` command inside docker, which is completely automated and will do the entire processing for you.
 
@@ -53,12 +59,6 @@ The build process involves 4 steps.
     * This script effectively creates a text version of the dump, which is much faster at processing.
 3. Complete the parsing, rendering, and combining.
 4. Copy the contents to a FAT32 SD card and enjoy.
-
-## Resource requirements
-Processing takes about 16 GB of ram, the largest section being the sorting of the index. I set MAX_CONCURRENCY to 8 which is the number of processors I have on my i7. The `autowiki` script defaults `MAX_CONCURRENCY` to the number of CPUs on the host.
-
-### Docker settings
-By default docker doesn't share a lot of resources if running on a mac or windows. You'll want to max out the CPU and memory share to your container in your docker configuration. On linux this is not an issue as far as I know.
 
 ## Preparing a wikipedia dump file
 This repo included a forked version of the [WikiExtractor.py](https://github.com/attardi/wikiextractor) file which is renamed to `clean_xml`. Before processing the XML dump, you'll need to run the `clean_xml` script on it to tidy things up. In my fork, I've made some improvements that are specific to the wikireader.

@@ -23,19 +23,26 @@ cd core
 docker build -t wikireader_core .
 ```
 
-# Auto-building a new wikireader image
-So easy! Use the `autowiki` script, which can be launched directly from docker. This script will do the following automatically for you:
+# Building your own wikireader image
+## Requirements
+In order to build a new wikireader image, you'll need:
+1. [docker](https://www.docker.com/products/docker-desktop)
+2. [git](https://git-scm.com/downloads)
+3. Very basic knowledge of the command line
 
-1. Download a wikireader dump
-2. Clean/process the XML for the dump while downloading, which will produce a dump file of approximately 16 GB
-3. Process the entire wikireader image
+## Building
+Once you have those tools, you can simply clone this repo and run the `autowiki` command inside docker, which is completely automated and will do the entire processing for you.
 
-You can run it like follows after cloning this repo. Make sure you share the build directory like in the command:
+It's important to note that we're "sharing" the `build` folder with docker, so once docker exits the processed image will be in that folder.
+
+The following command builds the 20200601 image of wikireader (you can see what's available at the [wikimedia dump page](https://dumps.wikimedia.org/enwiki/20200620/))
 ```
+git clone https://github.com/stephen-mw/wikireader.git
+cd wikireader
 docker run --rm -v $(pwd)/build:/build -ti docker.io/stephenmw/wikireader:latest autogen 20200601
 ```
 
-That's it! Now you can find your image under `build/20200601/image`. Just copy these files over to your wikireader
+After processing is complete (A little over 12 hours on my setup), you just need to copy the contents of `build/20200601/image` to the root of your SD card. If you only want to update the `enpedia` directory, then copy the contents of `build/20200601/image/enpedia` to the `enpedia` directory of your SD card (remove the existing files in there first).
 
 
 ## Building manually

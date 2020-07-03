@@ -45,7 +45,7 @@ The following command builds the 20200601 image of wikireader (you can see what'
 ```
 git clone https://github.com/stephen-mw/wikireader.git
 cd wikireader
-docker run --rm -v $(pwd)/build:/build -ti docker.io/stephenmw/wikireader:latest autogen 20200601
+docker run --rm -v $(pwd)/build:/build -ti docker.io/stephenmw/wikireader:latest autowiki 20200601
 ```
 
 After processing is complete (A little over 12 hours on my setup), you just need to copy the contents of `build/20200601/image` to the root of your SD card. If you only want to update the `enpedia` directory, then copy the contents of `build/20200601/image/enpedia` to the `enpedia` directory of your SD card (remove the existing files in there first).

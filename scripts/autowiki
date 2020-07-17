@@ -34,7 +34,7 @@ function process(){
     ln -sf /build/${XML} enwiki-pages-articles.xml
 
     echo "Starting processing of ${XML}"
-    time scripts/Run --parallel=64 --machines=1 --farm=1 --work=/build/${RUNVER}/work --dest=/build/${RUNVER}/image --temp=/dev/shm en:::NO:255::: 2>&1 < /dev/null
+    time scripts/Run --parallel=64 --machines=1 --farm=1 --work=/build/${RUNVER}/work --dest=/build/${RUNVER}/image --temp=/dev/shm en::::255::: 2>&1 < /dev/null
 
     echo "Creating image."
     make WORKDIR=/build/${RUNVER}/work DESTDIR=/build/${RUNVER}/image combine install

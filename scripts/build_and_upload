@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+set -euxo pipefail
+
+# This is the internal script used to automatically build, upload, and announce
+# new wikireader builds. It makes some assumptions about the local system and is
+# probably not very portable.
+#
+# Join us at r/wikireader
+
+# Always build the 1st. This script should be run sometime after you're pretty
+# certain the build is finished, like the 10th or 15th
+export DATEINT="$(date +%Y%m01)"
+export BUILDDIR="${HOME}/projects/wikireader"
+export FILENAME="WIKIREADER_${DATEINT}_ENPEDIA.zip"
+
+# Sanity check these are defined
+export RECIPIENTS="${WIKI_RECPIENTS}"
+export FTP_HOST="${WIKI_FTP_HOST}"
+export FTP_USER="${WIKI_FTP_USER}"
+export FTP_PASS="${WIKI_FTP_PASS}"
+
+# The torrent will be built and hosted from this torrent
+export TARGET="${HOME}/torrent/${FILENAME}"
+
+function build_dateint () {
+    echo "Building wikireader version ${DATEINT}"
+    cd "${BUILDDIR}"
+#    time docker run --rm -v $(pwd)/build:/build -ti docker.io/stephenmw/wikireader:latest autowiki "${DATEINT}"
+
+    cd "build/${DATEINT}/image/"
+    zip -r "${TARGET}" enpedia
+}
+
+function build_torrent() {
+    echo "Building torrent for the new wikireader build"
+    cd "${HOME}/torrent"
+
+    # Create/start the torrent and add it to a tracker
+    transmission-create "${FILENAME}" -t udp://tracker.openbittorrent.com:80
+    cp "${FILENAME}.torrent" /var/www/edge/pub/
+    transmission-remote -a "/var/www/edge/pub/${FILENAME}.torrent"
+}
+
+function upload_to_seedbox() {
+    cd "${HOME}/torrent"
+    ftp-upload -h "${WIKI_FTP_HOST}" -u "${WIKI_FTP_USER}" --password "${WIKI_FTP_PASS}" -d . "${FILENAME}"
+}
+
+function announce() {
+    mail -s "Wikireader ${DATEINT} now available" smwood4@gmail.com <<MAIL
+Dear wikireader fans,
+
+This message is to notify you that the latest version of wikireader [${DATEINT}] is built and ready.
+
+Sincerely,
+
+Stephen
+MAIL
+}
+
+build_dateint
+build_torrent
+upload_to_seedbox
+announce

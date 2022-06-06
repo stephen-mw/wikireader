@@ -94,7 +94,8 @@ Do it all in 1 go and save yourself 70GB of unnecessary disk space.
 
 ```
 # Download, decompress, and clean
-curl -L 'https://dumps.wikimedia.org/enwiki/20200601/enwiki-20200601-pages-articles.xml.bz2' -o- | bzcat | ../scripts/clean_xml - --wikireader --links --keep_tables -o- > enwiki-20200601-pages-articles.xml_clean
+export VERSION=20220601
+curl -sL "https://dumps.wikimedia.org/enwiki/${VERSION}/enwiki-${VERSION}-pages-articles.xml.bz2" -o- | bzcat | ../scripts/clean_xml - --wikireader --links --keep_tables -o- > enwiki-${VERSION}-pages-articles.xml_clean
 ```
 
 ## Commands for building

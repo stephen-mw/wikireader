@@ -79,21 +79,28 @@ On my machine, it takes approximately 90 minutes to download, decompress, and cl
 
 ### Download, decompress, clean (long way)
 ```
+# Set the wikimedia version. Make sure the dump is complete at: https://dumps.wikimedia.org/enwiki/${VERSION}
+export VERSION=20230201
+
 # This is the link to the June 2020 dump. Change as needed
-wget https://dumps.wikimedia.org/enwiki/20200601/enwiki-20200601-pages-articles.xml.bz2
+wget https://dumps.wikimedia.org/enwiki/${VERSION}/enwiki-${VERSION}-pages-articles.xml.bz2
 
 # Decompress
-bzip -d https://dumps.wikimedia.org/enwiki/20200601/enwiki-20200601-pages-articles.xml.bz2
+bzip -d https://dumps.wikimedia.org/enwiki/${VERSION}/enwiki-${VERSION}-pages-articles.xml.bz2
 
 # Clean
-../scripts/clean_xml enwiki-20200601-pages-articles.xml --wikireader --links --keep_tables -o- > enwiki-20200601-pages-articles.xml_clean
+../scripts/clean_xml enwiki-${VERSION}-pages-articles.xml --wikireader --links --keep_tables -o- > enwiki-${VERSION}-pages-articles.xml_clean
+
+# Symlink to the expected filename
+ln -sf enwiki-${VERSION}-pages-articles.xml_clean enwiki-pages-articles.xml
 ```
 
 ### Download, decompress, clean (one-liner)
 Do it all in 1 go and save yourself 70GB of unnecessary disk space.
 
 ```
-# Download, decompress, and clean
+# Download, decompress, and clean. The only problem with using this one-liner is that if your pipe breaks from an error you'll have to start all over again and it's a big download. Make sure to do it in a screen session or something.
+
 export VERSION=20220601
 curl -sL "https://dumps.wikimedia.org/enwiki/${VERSION}/enwiki-${VERSION}-pages-articles.xml.bz2" -o- | bzcat | ../scripts/clean_xml - --wikireader --links --keep_tables -o- > enwiki-${VERSION}-pages-articles.xml_clean
 ```

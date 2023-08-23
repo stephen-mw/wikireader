@@ -89,7 +89,7 @@ wget https://dumps.wikimedia.org/enwiki/${VERSION}/enwiki-${VERSION}-pages-artic
 bzip -d https://dumps.wikimedia.org/enwiki/${VERSION}/enwiki-${VERSION}-pages-articles.xml.bz2
 
 # Clean
-../scripts/clean_xml enwiki-${VERSION}-pages-articles.xml --wikireader --links --keep_tables -o- > enwiki-${VERSION}-pages-articles.xml_clean
+python3.8 ../scripts/clean_xml enwiki-${VERSION}-pages-articles.xml --wikireader --links --keep_tables -o- > enwiki-${VERSION}-pages-articles.xml_clean
 
 # Symlink to the expected filename
 ln -sf enwiki-${VERSION}-pages-articles.xml_clean enwiki-pages-articles.xml
